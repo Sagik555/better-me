@@ -281,3 +281,59 @@ is a finding, not a failure.
 - `rest_mode_period` returned zero rows across the entire history. The exclusion-flag
   design in 2.3 still holds, but it will rest on the questionnaire's illness and travel
   answers rather than on Rest Mode, unless you start using that feature.
+
+---
+
+## 9. The data supply depends on an app he built this system to stop opening
+
+Raised 2026-09-05: "I thought this should work even without opening the app."
+
+It does not, and this is structural rather than incidental.
+
+The ring talks Bluetooth to the phone. The Oura app is the only bridge from the phone
+to Oura's cloud. The API reads the cloud and nothing else. No app, no data — the spec's
+own Phase 1 note ("sleep data only reaches the API after I open the Oura app") had this
+right.
+
+Oura's support documentation is explicit about the consequence: "If your Oura Ring isn't
+synced with the Oura App for several days, collected data may be lost", and the ring's
+"internal memory becomes full and begins overwriting older data". Oura does not publish
+a capacity figure; roughly a week of onboard storage is the commonly cited number for
+Ring 4. So a 64-day gap is not a delayed upload, it is mostly permanent loss, and the
+recoverable portion is approximately the last week.
+
+### Why this matters more than the gap itself
+
+The premise of this project, in the first paragraph of the spec, is "I stopped opening
+the app because it reports numbers instead of telling me what to do." The system is
+being built precisely so he does not have to open the Oura app.
+
+But every analysis, every nightly email and every experiment verdict is fed by data that
+only reaches the cloud when he opens the Oura app. Left alone, the system will quietly
+starve exactly as it did between July and September, and it will keep emailing
+confident-sounding observations computed on a frozen sample, because nothing in the spec
+checks whether the feed is alive.
+
+This is the single most important thing the probes surfaced.
+
+### Required: a data freshness guard
+
+1. **The morning email leads with a sync nag** whenever the newest `long_sleep` row is
+   more than 2 days old: "Oura has not synced since <date>. Open the app." Above the
+   energy question, not below it.
+2. **The nightly email refuses to produce an observation on stale data.** If the feed is
+   stale it says so and stops. This is consistent with the spec's own rule that silence
+   is a valid output, and it is what prevents the system from sounding confident about
+   June while it is September.
+3. **The dashboard shows the two supply lines together**: Oura freshness (days since the
+   last sleep row) next to questionnaire adherence (answered days over calendar days,
+   trailing 30). Those two numbers are the leading indicators for everything else in the
+   system, and neither appears anywhere in the spec.
+4. **Every surfaced analysis prints its data window**, so a correlation computed on a
+   frozen sample is visibly frozen rather than silently stale.
+
+### Also worth considering
+
+Oura webhooks (section 2.2) do not solve this. They fire when data reaches Oura's cloud,
+which still requires the app. They make a live feed timelier; they cannot revive a dead
+one.
