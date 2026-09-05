@@ -19,7 +19,7 @@ const LOOKBACK_DAYS = Number(process.argv.find((a) => /^\d+$/.test(a)) || 7);
 const client = db();
 
 const { rows: threads } = await client.execute({
-  sql: `SELECT id, kind, date, gmail_thread_id, replied_at
+  sql: `SELECT id, kind, date, gmail_thread_id, gmail_message_id, replied_at
           FROM mail_threads
          WHERE gmail_thread_id IS NOT NULL
            AND kind IN ('morning','evening')
@@ -46,7 +46,7 @@ let found = 0, parsed = 0, failed = 0;
 for (const t of threads) {
   let replies;
   try {
-    replies = await readThreadReplies(t.gmail_thread_id);
+    replies = await readThreadReplies(t.gmail_thread_id, { excludeIds: [t.gmail_message_id] });
   } catch (e) {
     console.log(`  ${t.date} ${t.kind}: gmail error ${e.message.slice(0, 90)}`);
     continue;
