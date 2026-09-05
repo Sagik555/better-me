@@ -10,10 +10,15 @@
     "oura:probe-coverage": "node scripts/probe-coverage.mjs",
     "ingest": "node scripts/ingest.mjs",
     "sanity": "node scripts/sanity.mjs",
-    "ring:health": "node scripts/probe-ring-health.mjs"
+    "ring:health": "node scripts/probe-ring-health.mjs",
+    "checkin:morning": "node scripts/send-checkin.mjs morning",
+    "checkin:evening": "node scripts/send-checkin.mjs evening",
+    "test:parser": "node scripts/test-parser.mjs",
+    "replies": "node scripts/read-replies.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "googleapis": "^178.0.0"
   }
 }
