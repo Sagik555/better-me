@@ -9,7 +9,8 @@
     "db:migrate": "node scripts/migrate.mjs",
     "oura:probe-coverage": "node scripts/probe-coverage.mjs",
     "ingest": "node scripts/ingest.mjs",
-    "sanity": "node scripts/sanity.mjs"
+    "sanity": "node scripts/sanity.mjs",
+    "ring:health": "node scripts/probe-ring-health.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",

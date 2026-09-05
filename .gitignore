@@ -4,3 +4,5 @@ node_modules/
 .next/
 .vercel/
 *.log
+
+scripts/.dashboard-data.json
