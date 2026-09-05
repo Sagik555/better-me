@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "oura:consent": "node scripts/oura-consent.mjs",
-    "oura:probe-workouts": "node scripts/probe-workouts.mjs"
+    "oura:probe-workouts": "node scripts/probe-workouts.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "oura:probe-coverage": "node scripts/probe-coverage.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
