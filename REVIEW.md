@@ -110,7 +110,9 @@ You claim A is answerable retroactively on day one from the backfill. That rests
 
 `workout.source` is an enum: `manual`, `autodetected`, `confirmed`, `workout_heart_rate`. So the question is directly measurable. Oura detects walking, running and cycling well and strength training poorly — a lifting session often registers as nothing, or as a short low-intensity block.
 
-**Open probe, cannot run until OAuth credentials are in place:** pull `workout` for the full backfill window and cross-tabulate `source` by `activity`. If most of your training is strength and most strength sessions are absent or `manual`, then A on day one runs on a biased subset and the honest answer is to suppress it until the questionnaire supplies real start times. This is a ten-minute check and it decides whether A ships immediately or joins the queue. It is the single most important open item in this review.
+**RESOLVED 2026-09-05 — see section 8. Verdict: suppress analysis A.**
+
+The probe as originally specified: pull `workout` for the full backfill window and cross-tabulate `source` by `activity`. If most of your training is strength and most strength sessions are absent or `manual`, then A on day one runs on a biased subset and the honest answer is to suppress it until the questionnaire supplies real start times. This is a ten-minute check and it decides whether A ships immediately or joins the queue. It is the single most important open item in this review.
 
 ### 3.4 The experiment engine is over-built relative to its statistical power
 
@@ -178,3 +180,104 @@ Open items requiring you:
 3. `APP_PASSWORD` in `.env.local`.
 4. How many times a week do you train, and what mix? Spec question 9, still unanswered, and the B/C estimates above depend on it.
 5. Anything you already suspect is affecting your energy? Spec question 10. Cheap to test your hunches early rather than starting from scratch.
+
+---
+
+## 8. Probe results, 2026-09-05
+
+Run against the live account after OAuth consent. Three findings, one of them blocking.
+
+### 8.1 BLOCKING: the ring has produced no data since 2026-07-03
+
+| Resource | Earliest | Latest |
+|---|---|---|
+| `daily_activity` | 2025-11-25 | **2026-07-03** |
+| `sleep` / `daily_sleep` / `daily_readiness` | 2025-11-26 | **2026-06-29** |
+| `daily_resilience` | 2025-12-12 | 2026-06-29 |
+| `workout` | 2025-11-26 | 2026-06-14 |
+| `daily_stress` | 2025-11-25 | 2026-07-03 (see 8.2) |
+| `rest_mode_period` | (no rows ever) | |
+
+That is 64 days of silence as of today. Nothing in this system works without current
+data: the questionnaire has nothing to cross-reference against, the nightly email has
+nothing to observe, and every analysis is frozen at its June sample size.
+
+This is the first thing to resolve and it is not a code problem.
+
+The history that does exist is good: **2025-11-25 to 2026-07-03, about 220 days, with
+92% long_sleep coverage (199 of 216 nights)**. That is a better backfill than the "~6
+months" in the spec, and it is enough to run the retroactive analyses the day the feed
+resumes.
+
+### 8.2 Oura returns zero-filled placeholder rows for days with no data
+
+`daily_stress` appears to run to today, but the row for 2026-09-05 is
+`stress_high=0, recovery_high=0, day_summary=null`. It is a placeholder, not a
+measurement. The same shape appears on 2026-06-30 through 2026-07-02.
+
+Your own constraint says "Missing Oura data is an absent row, never a zero." The
+violation does not come from our code, it comes from the vendor. Ingesting these
+naively would put fabricated zeros into analysis D and quietly drag every correlation
+toward the origin.
+
+Rule: a `daily_stress` row with `day_summary = null` and both duration fields zero is
+discarded at ingest, not stored. Apply the same suspicion to any resource that returns
+an all-zero row with a null summary field.
+
+### 8.3 Analysis A: suppress. Two independent reasons.
+
+Measured over the real data window (2025-11-26 to 2026-06-29, 216 days):
+
+**Reason one, detection.** 141 workout rows, which looks like a 101% capture rate
+against 4.5 sessions a week. It is not. The rows are dominated by things that are not
+training:
+
+| activity | rows |
+|---|---|
+| walking | 56 |
+| strengthTraining | 29 |
+| houseWork | 29 |
+| instrument | 11 |
+| cycling | 9 |
+| hiking | 4 |
+| other | 2 |
+| padel | 1 |
+
+Against your stated 4-5 sessions a week, Oura logged **39 distinct days with a real
+training session out of 216, roughly 18%, where your own figure implies about 139
+days**. It catches somewhere near a quarter of your training. Notably it misses cycling
+about as badly as strength (9 rows against an expected 40-60), which is the opposite of
+what I predicted in section 3.3.
+
+**Reason two, and the decisive one: there is no variance to analyse.** Restricting to
+real training and pairing each session with that night's `long_sleep`:
+
+| workout-to-bed gap | sessions |
+|---|---|
+| under 2h | 0 |
+| 2-4h | 1 |
+| 4-6h | 0 |
+| 6h+ | 41 |
+
+41 of 42 sessions sit in one bucket. Even with perfect detection there is nothing to
+compare, because on this evidence you train in the morning or midday and essentially
+never close to bedtime. Bucketed group comparison across four buckets requires spread
+across four buckets.
+
+Analysis A is suppressed until the questionnaire supplies real start times AND the
+distribution shows genuine variation. If it turns out you simply never train late, the
+correct output is "you already do this optimally, there is nothing to test here", which
+is a finding, not a failure.
+
+### 8.4 Corrections to earlier numbers in this document
+
+- A first pass reported a 12% workout capture rate. That was computed over a trailing
+  200-day window, 64 days of which contain no data at all. Over the real data window the
+  row count is 101% and the substantive problem is composition, not volume, as set out
+  in 8.3. The conclusion is unchanged; the reasoning in 8.3 is the correct one.
+- Section 5 lists rate limits as unverified. Still unverified: every probe completed in
+  a single request per resource and no rate limit headers were returned, so the 500ms
+  backfill delay stands as a reasonable default rather than a measured one.
+- `rest_mode_period` returned zero rows across the entire history. The exclusion-flag
+  design in 2.3 still holds, but it will rest on the questionnaire's illness and travel
+  answers rather than on Rest Mode, unless you start using that feature.
