@@ -1,5 +1,6 @@
 /**
- * Read and parse check-in replies.  pnpm replies
+ * Read and parse check-in replies, then chase what came back empty.
+ *   pnpm replies            (--no-followup to skip the chase)
  *
  * Reads only the gmail_thread_id values we recorded when sending. Never scans
  * the inbox, never matches on subject.
@@ -11,18 +12,20 @@
  */
 import '../lib/env.mjs';
 import { db } from '../lib/oura-auth.mjs';
-import { readThreadReplies } from '../lib/gmail.mjs';
+import { readThreadReplies, sendMail } from '../lib/gmail.mjs';
 import { parseReply } from '../lib/parse-reply.mjs';
+import { findGaps, followUpEmail } from '../lib/questionnaire.mjs';
 import { recomputeDerived } from '../lib/ingest.mjs';
 
 const LOOKBACK_DAYS = Number(process.argv.find((a) => /^\d+$/.test(a)) || 7);
+const noFollowUp = process.argv.includes('--no-followup');
 const client = db();
 
 const { rows: threads } = await client.execute({
   sql: `SELECT id, kind, date, gmail_thread_id, gmail_message_id, replied_at
           FROM mail_threads
          WHERE gmail_thread_id IS NOT NULL
-           AND kind IN ('morning','evening')
+           AND kind IN ('morning','evening','followup')
            AND date >= date('now', ?)
          ORDER BY date DESC`,
   args: [`-${LOOKBACK_DAYS} day`],
@@ -41,7 +44,8 @@ const FIELDS = [
   'caffeine_cups', 'last_caffeine_hour', 'food_text', 'notes',
 ];
 
-let found = 0, parsed = 0, failed = 0;
+let found = 0, parsed = 0, failed = 0, chased = 0;
+const touchedDates = new Set();
 
 for (const t of threads) {
   let replies;
@@ -53,8 +57,6 @@ for (const t of threads) {
   }
   if (!replies.length) continue;
 
-  // The whole conversation on that thread, oldest first, so a follow-up
-  // correction ("actually it was 19:00") is visible to the parser.
   const text = replies.map((r) => r.body).join('\n---\n');
   found += 1;
 
@@ -74,31 +76,73 @@ for (const t of threads) {
     args: [replies[replies.length - 1].internalDate, t.id],
   });
 
-  // 2. Parse second.
-  const { fields, error, usage } = await parseReply(text, { kind: t.kind });
+  // 2. Parse second. A followup answers the evening questionnaire's gaps, so it
+  //    reads with the same context.
+  const kind = t.kind === 'followup' ? 'evening' : t.kind;
+  const { fields, error, usage } = await parseReply(text, { kind });
   if (error || !fields) {
     failed += 1;
     console.log(`  ${t.date} ${t.kind}: raw stored, PARSE FAILED (${(error || '').slice(0, 90)})`);
     continue;
   }
 
-  // COALESCE keeps an already-known value: the morning reply must not blank
-  // fields the evening reply filled, and vice versa.
+  // COALESCE keeps an already-known value: a followup answering two questions
+  // must not blank the sixteen fields the original reply filled.
   const sets = FIELDS.map((f) => `${f} = COALESCE(?, ${f})`).join(', ');
   await client.execute({
     sql: `UPDATE checkins SET ${sets}, parsed_at = ? WHERE date = ?`,
     args: [...FIELDS.map((f) => fields[f] ?? null), new Date().toISOString(), t.date],
   });
   parsed += 1;
+  touchedDates.add(t.date);
 
   const filled = FIELDS.filter((f) => fields[f] != null);
   console.log(
     `  ${t.date} ${t.kind}: parsed ${filled.length}/${FIELDS.length} fields ` +
-    `(${usage?.totalTokenCount ?? '?'} tok) -> ${filled.slice(0, 6).join(', ')}${filled.length > 6 ? '...' : ''}`
+    `(${usage?.totalTokenCount ?? '?'} tok)`
   );
 }
 
-console.log(`\n${threads.length} thread(s) checked, ${found} with replies, ${parsed} parsed, ${failed} failed`);
+/**
+ * The chase. Runs off the MERGED row rather than the single reply, so a field
+ * already supplied by an earlier message on another thread is never asked for
+ * twice. One followup per date, ever.
+ */
+if (!noFollowUp) {
+  for (const date of touchedDates) {
+    const already = await client.execute({
+      sql: `SELECT id FROM mail_threads WHERE kind = 'followup' AND date = ?`,
+      args: [date],
+    });
+    if (already.rows.length) continue;
+
+    const { rows } = await client.execute({
+      sql: 'SELECT * FROM checkins WHERE date = ?', args: [date],
+    });
+    if (!rows.length) continue;
+
+    const gaps = findGaps(rows[0]);
+    if (!gaps.length) {
+      console.log(`  ${date}: nothing missing, no followup`);
+      continue;
+    }
+    const mail = followUpEmail({ date, missing: gaps });
+    if (!mail) continue;
+
+    const { id, threadId } = await sendMail({
+      to: process.env.MY_EMAIL, subject: mail.subject, body: mail.body,
+    });
+    await client.execute({
+      sql: `INSERT INTO mail_threads (kind, date, gmail_thread_id, gmail_message_id, sent_at)
+            VALUES ('followup', ?, ?, ?, ?)`,
+      args: [date, threadId, id, new Date().toISOString()],
+    });
+    chased += 1;
+    console.log(`  ${date}: chasing ${gaps.slice(0, 3).join(', ')}${gaps.length > 3 ? ` (+${gaps.length - 3} not asked)` : ''}`);
+  }
+}
+
+console.log(`\n${threads.length} thread(s) checked, ${found} with replies, ${parsed} parsed, ${failed} failed, ${chased} chased`);
 
 if (parsed) {
   process.stdout.write('recomputing derived... ');
