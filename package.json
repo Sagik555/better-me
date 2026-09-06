@@ -15,7 +15,8 @@
     "checkin:evening": "node scripts/send-checkin.mjs evening",
     "test:parser": "node scripts/test-parser.mjs",
     "replies": "node scripts/read-replies.mjs",
-    "nightly": "node scripts/send-nightly.mjs"
+    "nightly": "node scripts/send-nightly.mjs",
+    "test:bedtime": "node scripts/test-bedtime-claim.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
