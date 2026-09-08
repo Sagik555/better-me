@@ -16,6 +16,15 @@ const SPEC_DAYS_MAX = 8;
 const SPEC_PCT_PER_HOUR_MAX = 100 / (SPEC_DAYS_MIN * 24); // 0.83
 const FAULT_PCT_PER_HOUR = 2.0;
 
+// The gauge reports whole percent, so a single 1-point step carries no rate
+// information: 100 -> 99 over 19 minutes is equally consistent with 0.5 %/h and
+// 6 %/h. An earlier version of this script printed "VERDICT: FAULT, 3.1 %/hour"
+// from exactly that, which is the kind of confident number a warranty engineer
+// would rightly dismantle. A rate is reported only once a run has both enough
+// drop and enough time.
+const MIN_DROP_POINTS = 5;
+const MIN_RUN_HOURS = 1;
+
 const client = db();
 const token = await getAccessToken(client);
 
@@ -74,7 +83,13 @@ if (run.length < 2) {
   const rate = hours > 0 ? drop / hours : null;
 
   console.log(`\n  ${drop} points over ${hours.toFixed(2)}h`);
-  if (rate != null && rate > 0) {
+  if (drop < MIN_DROP_POINTS || hours < MIN_RUN_HOURS) {
+    const lo = Math.max(0, drop - 1) / Math.max(hours, 0.01);
+    const hi = (drop + 1) / Math.max(hours, 0.01);
+    console.log(`\n  TOO EARLY TO SAY. Needs at least ${MIN_DROP_POINTS} points over ${MIN_RUN_HOURS}h.`);
+    console.log(`  The gauge reads whole percent, so on this much data the true rate is`);
+    console.log(`  anywhere from ${lo.toFixed(1)} to ${hi.toFixed(1)} %/hour. Keep wearing it, open the app again later.`);
+  } else if (rate != null && rate > 0) {
     const fullChargeHours = 100 / rate;
     console.log(`  discharge rate : ${rate.toFixed(2)} %/hour`);
     console.log(`  a full charge  : ${fullChargeHours.toFixed(1)} hours (${(fullChargeHours / 24).toFixed(1)} days)`);
@@ -105,7 +120,8 @@ for (const rn of runs) {
   const a = rn[0], b = rn[rn.length - 1];
   const h = (Date.parse(b.timestamp) - Date.parse(a.timestamp)) / 3600000;
   const d = a.level - b.level;
-  if (h <= 0 || d <= 0) continue;
+  // Same rule as the current run: short or shallow runs are not evidence.
+  if (h < MIN_RUN_HOURS || d < MIN_DROP_POINTS) continue;
   console.log(
     `  ${a.timestamp.slice(0, 16).replace('T', ' ')} -> ${b.timestamp.slice(11, 16)}  ` +
     `${String(a.level).padStart(3)}% -> ${String(b.level).padStart(3)}%  ` +
