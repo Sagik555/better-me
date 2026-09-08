@@ -1,0 +1,115 @@
+/**
+ * Ring battery health.   pnpm battery
+ *
+ * Pulls every battery reading Oura has, stores it (the API rolls old ones off),
+ * and measures the discharge rate of the current run: everything since the ring
+ * last left the charger.
+ *
+ * Oura rates the Ring 4 at 5-8 days, which is 0.5-0.8 %/hour. Anything above
+ * about 2 %/hour is a fault, not heavy usage.
+ */
+import '../lib/env.mjs';
+import { db, getAccessToken, ouraGet } from '../lib/oura-auth.mjs';
+
+const SPEC_DAYS_MIN = 5;
+const SPEC_DAYS_MAX = 8;
+const SPEC_PCT_PER_HOUR_MAX = 100 / (SPEC_DAYS_MIN * 24); // 0.83
+const FAULT_PCT_PER_HOUR = 2.0;
+
+const client = db();
+const token = await getAccessToken(client);
+
+const iso = (d) => d.toISOString().slice(0, 10);
+const end = new Date();
+const start = new Date(end.getTime() - 60 * 86400000);
+
+const { data } = await ouraGet(token, 'ring_battery_level', {
+  start_date: iso(start), end_date: iso(end),
+});
+
+let stored = 0;
+for (const r of data) {
+  const res = await client.execute({
+    sql: `INSERT INTO ring_battery (timestamp, level, charging, in_charger, fetched_at)
+          VALUES (?,?,?,?,?)
+          ON CONFLICT(timestamp) DO NOTHING`,
+    args: [r.timestamp, r.level, r.charging ? 1 : 0, r.in_charger ? 1 : 0, new Date().toISOString()],
+  });
+  stored += res.rowsAffected;
+}
+
+const { rows } = await client.execute({
+  sql: 'SELECT * FROM ring_battery ORDER BY timestamp',
+  args: [],
+});
+console.log(`${data.length} reading(s) from the API, ${stored} new, ${rows.length} stored in total.\n`);
+
+if (!rows.length) {
+  console.log('No battery readings at all. Open the Oura app so the ring syncs.');
+  client.close();
+  process.exit(0);
+}
+
+// The current run starts at the last reading where the ring was in the charger.
+let runStart = 0;
+for (let i = rows.length - 1; i >= 0; i--) {
+  if (rows[i].in_charger || rows[i].charging) { runStart = i; break; }
+}
+const run = rows.slice(runStart).filter((r, i) => i === 0 || (!r.in_charger && !r.charging));
+
+console.log('=== CURRENT RUN (since it last left the charger) ===');
+if (run.length < 2) {
+  const last = rows[rows.length - 1];
+  console.log(`  Only one reading so far: ${last.timestamp} at ${last.level}%` +
+              `${last.in_charger ? ' (in charger)' : ''}.`);
+  console.log('  Open the Oura app to sync more readings; the ring only uploads when the app runs.');
+} else {
+  for (const r of run) {
+    console.log(`  ${r.timestamp.slice(0, 16).replace('T', ' ')}  ${String(r.level).padStart(3)}%` +
+                `${r.in_charger ? '  [charger]' : ''}`);
+  }
+  const a = run[0], b = run[run.length - 1];
+  const hours = (Date.parse(b.timestamp) - Date.parse(a.timestamp)) / 3600000;
+  const drop = a.level - b.level;
+  const rate = hours > 0 ? drop / hours : null;
+
+  console.log(`\n  ${drop} points over ${hours.toFixed(2)}h`);
+  if (rate != null && rate > 0) {
+    const fullChargeHours = 100 / rate;
+    console.log(`  discharge rate : ${rate.toFixed(2)} %/hour`);
+    console.log(`  a full charge  : ${fullChargeHours.toFixed(1)} hours (${(fullChargeHours / 24).toFixed(1)} days)`);
+    console.log(`  Oura spec      : ${SPEC_DAYS_MIN}-${SPEC_DAYS_MAX} days, i.e. under ${SPEC_PCT_PER_HOUR_MAX.toFixed(2)} %/hour`);
+    console.log(`  ratio to spec  : ${(rate / SPEC_PCT_PER_HOUR_MAX).toFixed(1)}x faster than the slowest passing rate`);
+    console.log(rate > FAULT_PCT_PER_HOUR
+      ? `\n  VERDICT: FAULT. ${rate.toFixed(1)} %/hour is not heavy usage, it is a failing cell.`
+      : `\n  VERDICT: within a plausible range for heavy usage.`);
+  } else {
+    console.log('  No discharge measured yet in this run.');
+  }
+}
+
+// Every completed run on record, for the warranty file.
+console.log('\n=== ALL DISCHARGE RUNS ON RECORD ===');
+let cur = [];
+const runs = [];
+for (const r of rows) {
+  if (r.in_charger || r.charging) {
+    if (cur.length >= 2) runs.push(cur);
+    cur = [];
+  } else {
+    cur.push(r);
+  }
+}
+if (cur.length >= 2) runs.push(cur);
+for (const rn of runs) {
+  const a = rn[0], b = rn[rn.length - 1];
+  const h = (Date.parse(b.timestamp) - Date.parse(a.timestamp)) / 3600000;
+  const d = a.level - b.level;
+  if (h <= 0 || d <= 0) continue;
+  console.log(
+    `  ${a.timestamp.slice(0, 16).replace('T', ' ')} -> ${b.timestamp.slice(11, 16)}  ` +
+    `${String(a.level).padStart(3)}% -> ${String(b.level).padStart(3)}%  ` +
+    `${(d / h).toFixed(2)} %/h  (full charge = ${(100 / (d / h) / 24).toFixed(1)} days)`
+  );
+}
+client.close();
