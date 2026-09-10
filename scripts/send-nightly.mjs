@@ -21,6 +21,21 @@ const today = asOf
   ? asOf.slice('--as-of='.length)
   : new Intl.DateTimeFormat('en-CA', { timeZone: process.env.TZ || 'Asia/Jerusalem' }).format(new Date());
 
+// The tick fires every hour. Without this guard the nightly goes out on every
+// one of them, and each duplicate burns a Gemini call before it even discovers
+// it is a duplicate. Same (kind, date) guard the check-ins already use.
+if (!dry && !asOf) {
+  const sent = await client.execute({
+    sql: `SELECT id FROM mail_threads WHERE kind = 'nightly' AND date = ?`,
+    args: [today],
+  });
+  if (sent.rows.length) {
+    console.log(`nightly for ${today} already sent. Nothing to do.`);
+    client.close();
+    process.exit(0);
+  }
+}
+
 const { rows } = await client.execute({
   sql: `SELECT o.date, o.sleep_score, o.readiness_score, o.total_sleep_min, o.deep_min,
                o.rem_min, o.efficiency, o.latency_min, o.avg_hrv, o.resting_hr,
@@ -60,9 +75,17 @@ if (verbose) {
 
 const mail = await writeNightly(summary);
 
+// The repo is public and so are its Actions logs. The nightly body is personal
+// health coaching written about one named person; it goes to the mailbox and
+// to `insights`, never to a log anyone can read. Locally it still prints.
+const showBody = dry || verbose || !process.env.CI;
 console.log(`--- nightly · ${today} ---`);
-console.log(`Subject: ${mail.subject}\n`);
-console.log(mail.body);
+if (showBody) {
+  console.log(`Subject: ${mail.subject}\n`);
+  console.log(mail.body);
+} else {
+  console.log(`  subject and ${mail.body.length}-char body withheld: CI logs are public.`);
+}
 if (mail.reason) console.log(`\n[${mail.silent ? 'silent' : 'fallback'}: ${mail.reason}]`);
 if (mail.model) console.log(`\n[written by ${mail.model}]`);
 

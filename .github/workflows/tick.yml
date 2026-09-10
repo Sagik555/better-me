@@ -1,0 +1,63 @@
+# The whole schedule for Better Me.
+#
+# One hourly cron, not five daily ones: Actions cron is UTC and Israel moves
+# between UTC+2 and UTC+3, so a fixed UTC schedule slips an hour twice a year.
+# scripts/tick.mjs decides what to run off the Asia/Jerusalem clock, and every
+# job it runs is idempotent, so a late, retried or duplicated tick is harmless.
+#
+# Minute 7, not 0: the top of the hour is the most contended slot on Actions
+# and is where scheduled runs get delayed the longest.
+name: tick
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      hour:
+        description: 'Pretend it is this local hour (0-23). Blank = now.'
+        required: false
+      dry:
+        description: 'Print the plan without running anything'
+        type: boolean
+        default: false
+
+# Two ticks at once would race the Oura refresh token, which is single-use and
+# rotates on every refresh. Queue instead of cancelling: a tick that is already
+# sending mail should finish.
+concurrency:
+  group: better-me-tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: tick
+        run: node scripts/tick.mjs ${{ inputs.hour && format('--hour={0}', inputs.hour) || '' }} ${{ inputs.dry && '--dry' || '' }}
+        env:
+          TZ: Asia/Jerusalem
+          OURA_CLIENT_ID: ${{ secrets.OURA_CLIENT_ID }}
+          OURA_CLIENT_SECRET: ${{ secrets.OURA_CLIENT_SECRET }}
+          OURA_REDIRECT_URI: ${{ secrets.OURA_REDIRECT_URI }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          MY_EMAIL: ${{ secrets.MY_EMAIL }}
