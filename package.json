@@ -19,7 +19,8 @@
     "test:bedtime": "node scripts/test-bedtime-claim.mjs",
     "coach": "node scripts/coach-report.mjs",
     "battery": "node scripts/battery-watch.mjs",
-    "tick": "node scripts/tick.mjs"
+    "tick": "node scripts/tick.mjs",
+    "secrets:gh": "node scripts/set-gh-secrets.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
