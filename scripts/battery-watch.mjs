@@ -28,6 +28,26 @@ const MIN_RUN_HOURS = 1;
 const client = db();
 const token = await getAccessToken(client);
 
+// Which physical ring produced a reading. A reading belongs to the ring whose
+// paired_at is the latest one at or before its timestamp. Without this, the
+// warranty trace from the failed ring and the replacement's readings share one
+// table and one "current run", and the discharge rate measures two devices at
+// once. See db/migrations/004_ring_identity.sql.
+const { rows: ringRows } = await client.execute({
+  sql: 'SELECT label, paired_at, retired_at, note FROM rings ORDER BY paired_at',
+  args: [],
+});
+if (!ringRows.length) {
+  console.log('No rows in `rings`. Run pnpm db:migrate first.');
+  process.exit(1);
+}
+const currentRing = ringRows.find((r) => !r.retired_at) ?? ringRows[ringRows.length - 1];
+const labelFor = (ts) => {
+  let out = ringRows[0].label;
+  for (const r of ringRows) if (Date.parse(ts) >= Date.parse(r.paired_at)) out = r.label;
+  return out;
+};
+
 const iso = (d) => d.toISOString().slice(0, 10);
 const end = new Date();
 const start = new Date(end.getTime() - 60 * 86400000);
@@ -39,27 +59,32 @@ const { data } = await ouraGet(token, 'ring_battery_level', {
 let stored = 0;
 for (const r of data) {
   const res = await client.execute({
-    sql: `INSERT INTO ring_battery (timestamp, level, charging, in_charger, fetched_at)
-          VALUES (?,?,?,?,?)
+    sql: `INSERT INTO ring_battery (timestamp, level, charging, in_charger, fetched_at, ring_label)
+          VALUES (?,?,?,?,?,?)
           ON CONFLICT(timestamp) DO NOTHING`,
-    args: [r.timestamp, r.level, r.charging ? 1 : 0, r.in_charger ? 1 : 0, new Date().toISOString()],
+    args: [r.timestamp, r.level, r.charging ? 1 : 0, r.in_charger ? 1 : 0,
+           new Date().toISOString(), labelFor(r.timestamp)],
   });
   stored += res.rowsAffected;
 }
 
-const { rows } = await client.execute({
+const { rows: allRows } = await client.execute({
   sql: 'SELECT * FROM ring_battery ORDER BY timestamp',
   args: [],
 });
-console.log(`${data.length} reading(s) from the API, ${stored} new, ${rows.length} stored in total.\n`);
+// Only the ring on his finger right now can have a "current run".
+const rows = allRows.filter((r) => r.ring_label === currentRing.label);
+console.log(`${data.length} reading(s) from the API, ${stored} new, ${allRows.length} stored in total.`);
+console.log(`Current ring: ${currentRing.label} (paired ${currentRing.paired_at.slice(0, 10)}), ` +
+            `${rows.length} reading(s) on it.\n`);
 
 if (!rows.length) {
-  console.log('No battery readings at all. Open the Oura app so the ring syncs.');
-  client.close();
-  process.exit(0);
+  console.log(`=== CURRENT RUN ===\n  No readings yet for ${currentRing.label}.` +
+              `  Wear it and open the Oura app so it syncs.`);
 }
 
 // The current run starts at the last reading where the ring was in the charger.
+if (rows.length) {
 let runStart = 0;
 for (let i = rows.length - 1; i >= 0; i--) {
   if (rows[i].in_charger || rows[i].charging) { runStart = i; break; }
@@ -102,30 +127,42 @@ if (run.length < 2) {
     console.log('  No discharge measured yet in this run.');
   }
 }
-
-// Every completed run on record, for the warranty file.
-console.log('\n=== ALL DISCHARGE RUNS ON RECORD ===');
-let cur = [];
-const runs = [];
-for (const r of rows) {
-  if (r.in_charger || r.charging) {
-    if (cur.length >= 2) runs.push(cur);
-    cur = [];
-  } else {
-    cur.push(r);
-  }
 }
-if (cur.length >= 2) runs.push(cur);
-for (const rn of runs) {
-  const a = rn[0], b = rn[rn.length - 1];
-  const h = (Date.parse(b.timestamp) - Date.parse(a.timestamp)) / 3600000;
-  const d = a.level - b.level;
-  // Same rule as the current run: short or shallow runs are not evidence.
-  if (h < MIN_RUN_HOURS || d < MIN_DROP_POINTS) continue;
-  console.log(
-    `  ${a.timestamp.slice(0, 16).replace('T', ' ')} -> ${b.timestamp.slice(11, 16)}  ` +
-    `${String(a.level).padStart(3)}% -> ${String(b.level).padStart(3)}%  ` +
-    `${(d / h).toFixed(2)} %/h  (full charge = ${(100 / (d / h) / 24).toFixed(1)} days)`
-  );
+
+// Every completed run on record, kept per ring so the failed ring's evidence
+// stays quotable in the warranty file and is never averaged with a new device.
+console.log('\n=== ALL DISCHARGE RUNS ON RECORD ===');
+for (const ring of ringRows) {
+  const readings = allRows.filter((r) => r.ring_label === ring.label);
+  const span = `${ring.paired_at.slice(0, 10)} .. ${ring.retired_at ? ring.retired_at.slice(0, 10) : 'now'}`;
+  console.log(`\n  ${ring.label}  (${span})  ${readings.length} reading(s)`);
+
+  let cur = [];
+  const runs = [];
+  for (const r of readings) {
+    if (r.in_charger || r.charging) {
+      if (cur.length >= 2) runs.push(cur);
+      cur = [];
+    } else {
+      cur.push(r);
+    }
+  }
+  if (cur.length >= 2) runs.push(cur);
+
+  let printed = 0;
+  for (const rn of runs) {
+    const a = rn[0], b = rn[rn.length - 1];
+    const h = (Date.parse(b.timestamp) - Date.parse(a.timestamp)) / 3600000;
+    const d = a.level - b.level;
+    // Same rule as the current run: short or shallow runs are not evidence.
+    if (h < MIN_RUN_HOURS || d < MIN_DROP_POINTS) continue;
+    printed += 1;
+    console.log(
+      `    ${a.timestamp.slice(0, 16).replace('T', ' ')} -> ${b.timestamp.slice(11, 16)}  ` +
+      `${String(a.level).padStart(3)}% -> ${String(b.level).padStart(3)}%  ` +
+      `${(d / h).toFixed(2)} %/h  (full charge = ${(100 / (d / h) / 24).toFixed(1)} days)`
+    );
+  }
+  if (!printed) console.log('    no run deep or long enough to be evidence yet');
 }
 client.close();
