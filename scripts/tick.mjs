@@ -27,15 +27,21 @@ import { db } from '../lib/oura-auth.mjs';
 const TZ = process.env.TZ || 'Asia/Jerusalem';
 
 // Local hours, Asia/Jerusalem. This is the whole schedule; change it here.
-const MORNING_HOUR = 7;
-const EVENING_HOUR = 21;
-const NIGHTLY_HOUR = 22;
-const REPLIES_FROM = 8;
-const REPLIES_UNTIL = 23;
+//
+// WINDOWS, NOT EXACT HOURS. GitHub's scheduler is best-effort and this repo
+// gets a thin slice of it: on the first day live, an hourly cron fired at
+// 19:04, 21:34, 23:59 and 04:23 UTC. Four ticks in nine hours, none on the
+// minute requested. A job pinned to `hour === 7` would simply not happen most
+// days. Each job instead fires at the FIRST tick inside its window, and is
+// idempotent on (kind, local date), so it lands exactly once whenever the
+// runner actually turns up.
+const MORNING = [7, 11];
+const EVENING = [20, 23];
+const NIGHTLY = [21, 23];
+const REPLIES = [8, 23];
 // Last night's sleep only reaches Oura's cloud when the app is opened, so the
 // ingest keeps looking through the day rather than polling twice and hoping.
-const INGEST_FROM = 5;
-const INGEST_UNTIL = 16;
+const INGEST = [5, 16];
 // Above this the supply line is dead: the ring has not synced, and nothing
 // downstream is running on current data.
 const STALE_ALARM_DAYS = 2;
@@ -71,21 +77,40 @@ console.log(`tick  ${today} ${String(hour).padStart(2, '0')}:00 ${TZ}` +
 console.log(`  newest night with sleep: ${lastNight ?? 'none'}` +
             (staleDays === null ? '' : `  (${staleDays}d old)`));
 
-// A job runs only if its hour matches AND its own precondition holds.
+// What has already gone out today. Checked here rather than left to each child
+// script so the tick log says what it decided, and so a duplicate does not cost
+// a node boot and a Gemini call to discover it is a duplicate.
+const { rows: threads } = await client.execute({
+  sql: 'SELECT kind FROM mail_threads WHERE date = ?',
+  args: [today],
+});
+const done = new Set(threads.map((r) => r.kind));
+const inWindow = ([from, to]) => hour >= from && hour <= to;
+
+// A job runs only if it is inside its window AND has not already happened.
 const plan = [];
-if ((hour >= INGEST_FROM && hour <= INGEST_UNTIL && !haveLastNight)
-    || hour === MORNING_HOUR || hour === NIGHTLY_HOUR) {
+const wantMorning = !done.has('morning') && inWindow(MORNING);
+const wantEvening = !done.has('evening') && inWindow(EVENING);
+// The nightly reads the evening answers, so it never precedes the evening ask.
+// `done` is a snapshot from before this tick, so an evening sent in this very
+// tick pushes the nightly to the next one, which is what we want anyway: he
+// needs time to reply.
+const wantNightly = !done.has('nightly') && done.has('evening') && inWindow(NIGHTLY);
+
+if ((inWindow(INGEST) && !haveLastNight) || wantMorning || wantNightly) {
   plan.push(['ingest', ['scripts/ingest.mjs']]);
 }
-if (hour >= REPLIES_FROM && hour <= REPLIES_UNTIL) {
-  plan.push(['replies', ['scripts/read-replies.mjs']]);
-}
-if (hour === MORNING_HOUR) plan.push(['checkin:morning', ['scripts/send-checkin.mjs', 'morning']]);
-if (hour === EVENING_HOUR) plan.push(['checkin:evening', ['scripts/send-checkin.mjs', 'evening']]);
-if (hour === NIGHTLY_HOUR) plan.push(['nightly', ['scripts/send-nightly.mjs']]);
+if (inWindow(REPLIES)) plan.push(['replies', ['scripts/read-replies.mjs']]);
+if (wantMorning) plan.push(['checkin:morning', ['scripts/send-checkin.mjs', 'morning']]);
+if (wantEvening) plan.push(['checkin:evening', ['scripts/send-checkin.mjs', 'evening']]);
+if (wantNightly) plan.push(['nightly', ['scripts/send-nightly.mjs']]);
 
-if (haveLastNight && hour >= INGEST_FROM && hour <= INGEST_UNTIL) {
+if (done.size) console.log(`  already sent today: ${[...done].join(', ')}`);
+if (haveLastNight && inWindow(INGEST)) {
   console.log(`  ingest skipped: last night (${today}) already landed`);
+}
+if (!done.has('nightly') && !done.has('evening') && inWindow(NIGHTLY)) {
+  console.log('  nightly held: the evening check-in has not gone out yet');
 }
 if (staleDays !== null && staleDays > STALE_ALARM_DAYS) {
   console.log(`  WARNING: no sleep data for ${staleDays} days. Open the Oura app.`);
