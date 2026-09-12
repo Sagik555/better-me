@@ -18,6 +18,7 @@
     "replies": "node scripts/read-replies.mjs",
     "nightly": "node scripts/send-nightly.mjs",
     "test:bedtime": "node scripts/test-bedtime-claim.mjs",
+    "test:latency": "node scripts/test-latency-claim.mjs",
     "coach": "node scripts/coach-report.mjs",
     "battery": "node scripts/battery-watch.mjs",
     "tick": "node scripts/tick.mjs",
