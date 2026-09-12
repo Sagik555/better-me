@@ -338,11 +338,12 @@
           <span class="pill"><i></i>אנרגיה וריכוז</span>
           <span class="rec-when">הלילה, עד 22:40</span>
         </div>
-        <h3>תכבה מסכים ב-22:10 ותהיה במיטה ב-<em>22:40</em>.</h3>
-        <p>אתמול נכנסת ב-23:32 וקמת ב-07:07. אותה שעת קימה עם כיבוי ב-22:40 = 8 שעות 27 דקות, בפעם הראשונה החודש מעל הקצה העליון של הטווח שלך.</p>
+        <h3>הלילה זה נכנס לשינה. בכל לילה אחר הבוקר לוקח את זה בחזרה.</h3>
+        <p>שעת הכיבוי שלך זזה 35 דקות בלבד על פני כל השבוע, והקימה זזה 51. כלומר את משך השינה קובע הבוקר, לא הערב. הלילה, לפני שבת, אתה קם בממוצע ב-08:20 — המאוחר בשבוע. זה הלילה היחיד שבו כל דקה שתקדים נשארת אצלך.</p>
         <div class="priced">
+          <span class="tag">כיבוי 22:45 ⟵ 9 שעות 35</span>
           <span class="tag">89 במקום 80</span>
-          <span>זה ההפרש בין מוכנות בלילות הארוכים שלך לקצרים, על 211 לילות. <b>ההחלטה שלך.</b></span>
+          <span>ההפרש בין הלילות הארוכים שלך לקצרים, על 211 לילות. <b>ההחלטה שלך.</b></span>
         </div>
       </article>
 
@@ -375,12 +376,61 @@
     </div>
   </section>
 
+  <!-- ============ the week he actually has ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>השבוע שלך</h2>
+      <span class="sec-note">נמדד על 216 לילות, לא נשאל. לילה נרשם לפי היום שבו הוא התחיל.</span>
+    </div>
+    <div class="plot">
+      <svg id="week" viewBox="0 0 900 300" role="img"
+           aria-label="שבע שורות, לילה לכל יום בשבוע, מ-20:00 עד 10:00. הכיבוי נע בין 23:03 ל-23:38 בלבד. הקימה נעה בין 07:29 ל-08:20. חמישי בלילה הוא המאוחר והקצר, שישי בלילה הארוך."></svg>
+    </div>
+    <div class="supply">
+      <span class="chip"><i class="cdot ok"></i> כיבוי נע <b>35 דקות</b> על פני השבוע</span>
+      <span class="chip"><i class="cdot watch"></i> קימה נעה <b>51 דקות</b> · שם נקבע המשך</span>
+      <span class="chip"><i class="cdot watch"></i> הלילה המאוחר: <b>חמישי</b> 23:38</span>
+      <span class="chip"><i class="cdot ok"></i> הלילה הארוך: <b>שישי</b> 7 שע׳ 55 ד׳</span>
+      <span class="chip"><i class="cdot watch"></i> היום החלש: <b>שישי</b> · מוכנות 81.5</span>
+    </div>
+
+    <div class="drop" style="border-style:dashed">
+      <b>מה עוד צריך לדעת עליך</b>
+      <span>עשר שאלות שאף חיישן לא עונה עליהן, וכל אחת מהן משנה המלצה. עוד לא נשאלת אף אחת מהן.</span>
+      <div class="evid" style="margin-top:6px">
+        <span class="ev">שעות עבודה</span>
+        <span class="ev">ימי עבודה מול סוף שבוע</span>
+        <span class="ev">באילו ימים ובאיזו שעה אתה מתאמן</span>
+        <span class="ev">נסיעות: כמה זמן ומתי</span>
+        <span class="ev">מה קורה בין הארוחה האחרונה לשינה</span>
+        <span class="ev">עד מתי מסכים</span>
+        <span class="ev">מי מכין את האוכל ומתי</span>
+        <span class="ev">ערבים עם ילדים או בלי</span>
+        <span class="ev">נסיעות עבודה וחופשות</span>
+      </div>
+      <button class="btn" type="button">ענה על העשר, פעם אחת</button>
+    </div>
+  </section>
+
   <!-- ============ nutrition: the plan is the reference ============ -->
   <section>
     <div class="sec-head">
       <h2>תזונה</h2>
-      <span class="sec-note">מול התוכנית של ענת, לא מול המלצות כלליות. יעד אמיתי, אז אפשר לומר "קרה" או "לא קרה".</span>
+      <span class="sec-note">לא רק מה ומתי. מה התוכנית מנסה לעשות.</span>
     </div>
+
+    <article class="rec" style="--tint:var(--good-dim); --hue:var(--good-hi); padding:22px 26px 20px">
+      <div class="rec-head">
+        <span class="pill"><i></i>הרעיון של התוכנית</span>
+        <span class="rec-when">נקרא מרשימות המנות של ענת, לא מטבלת הארוחות</span>
+      </div>
+      <h3 style="font-size:clamp(20px,2.9vw,27px)">פחמימה מרוכזת ב<em>ארוחה אחת</em>, בערב. כל השאר חלבון וירקות, לאורך כל היום.</h3>
+      <p><b>למה זה לא ברור מהטבלה:</b> "פרוסת לחם חלבון" מופיעה אצלה תחת מנת חלבון, לא תחת מנת פחמימה. לכן הלחם של הבוקר והצהריים הוא חלבון. הפחמימה היחידה בשאר היום היא פרי. הפחמימה המבושלת — 3-4 כפות או 2 פרוסות — קיימת רק בערב.</p>
+      <div class="priced">
+        <span class="tag">7 כללים · כולם ניתנים לבדיקה</span>
+        <span>לכן ארוחה נמדדת מול הכלל, לא מול שם המשבצת. סנדוויץ׳ בצהריים לא נופל כי הוא לא בזמן, אלא כי הוא לחם רגיל ולא לחם חלבון.</span>
+      </div>
+    </article>
 
     <div class="plan-head">
       <div class="plan-who"><b>ענת היימן</b>, דיאטנית קלינית · תוכנית מ-21.7.2026 · מטרה: חיטוב ובריאות</div>
@@ -566,6 +616,68 @@
       d.className = (h ? "" : "empty ") + (i === HAS.length - 1 ? "now" : "");
       el.appendChild(d);
     });
+  })();
+
+  /* ================= the week he actually has =================
+     Seven nights, one row each, drawn on a single 20:00-10:00 axis so the bars
+     are directly comparable. The finding is the SHAPE: the left edges are
+     almost a straight line and the right edges are not, which is what "your
+     wake time decides your sleep, not your bedtime" looks like. */
+  (function () {
+    var WEEK = [   // night starting on this day: bed, wake (decimal h), sleep min, readiness
+      { he: "ראשון",  bed: 23.25, wake: 7.48, min: 430, rd: 82.7, n: 29 },
+      { he: "שני",    bed: 23.15, wake: 7.65, min: 437, rd: 83.2, n: 29 },
+      { he: "שלישי",  bed: 23.28, wake: 7.75, min: 448, rd: 83.6, n: 31 },
+      { he: "רביעי",  bed: 23.37, wake: 7.97, min: 453, rd: 85.6, n: 28 },
+      { he: "חמישי",  bed: 23.63, wake: 7.88, min: 432, rd: 81.5, n: 31 },
+      { he: "שישי",   bed: 23.45, wake: 8.33, min: 475, rd: 83.1, n: 30 },
+      { he: "שבת",    bed: 23.05, wake: 7.52, min: 447, rd: 83.2, n: 38 }
+    ];
+    var svg = document.getElementById("week");
+    var W = 900, PL = 74, PR = 128, PT = 26, ROW = 34;
+    var iw = W - PL - PR, T0 = 20, T1 = 34;                 // 20:00 .. 10:00 next day
+    var xa = function (h) { return PL + ((h < 12 ? h + 24 : h) - T0) / (T1 - T0) * iw; };
+    var hm = function (m) { return Math.floor(m / 60) + " שע׳ " + Math.round(m % 60) + " ד׳"; };
+
+    var defs = mk("defs", {}, svg);
+    var g = mk("linearGradient", { id: "wkFill", x1: "0", y1: "0", x2: "1", y2: "0" }, defs);
+    mk("stop", { offset: "0%",   "stop-color": tok("--act"),    "stop-opacity": ".85" }, g);
+    mk("stop", { offset: "100%", "stop-color": tok("--act-hi"), "stop-opacity": ".85" }, g);
+
+    ["21:00", "23:00", "01:00", "03:00", "05:00", "07:00", "09:00"].forEach(function (t) {
+      var X = xa(Number(t.slice(0, 2)));
+      mk("line", { x1: X, y1: PT - 8, x2: X, y2: PT + WEEK.length * ROW - 6,
+                   stroke: tok("--rule"), "stroke-width": 1 }, svg);
+      mk("text", { x: X, y: PT + WEEK.length * ROW + 12, "text-anchor": "middle",
+                   "font-size": 11.5, fill: tok("--ink-3"),
+                   "font-family": "Assistant, sans-serif" }, svg, t);
+    });
+
+    WEEK.forEach(function (d, i) {
+      var y = PT + i * ROW, best = d.rd === 85.6, worst = d.rd === 81.5;
+      mk("text", { x: PL - 12, y: y + 5, "text-anchor": "end", "font-size": 13,
+                   "font-weight": best || worst ? 700 : 400,
+                   fill: best ? tok("--good-hi") : worst ? tok("--bad-hi") : tok("--ink-2"),
+                   "font-family": "Assistant, sans-serif" }, svg, d.he);
+      var xb = xa(d.bed), xw = xa(d.wake);
+      mk("rect", { x: xb, y: y - 9, width: xw - xb, height: 18, rx: 9,
+                   fill: "url(#wkFill)" }, svg);
+      mk("text", { x: xb - 6, y: y + 4, "text-anchor": "end", "font-size": 11,
+                   fill: tok("--ink-3"), "font-family": "Assistant, sans-serif" }, svg, "");
+      mk("text", { x: W - PR + 12, y: y + 5, "font-size": 12,
+                   fill: best || worst ? (best ? tok("--good-hi") : tok("--bad-hi")) : tok("--ink-2"),
+                   "font-family": "Assistant, sans-serif" }, svg,
+         hm(d.min) + "  ·  " + d.rd);
+    });
+
+    // the two edges, called out: one is a line, the other is not
+    mk("text", { x: xa(23.05) - 4, y: PT - 12, "text-anchor": "end", "font-size": 11.5,
+                 fill: tok("--ink-3"), "font-family": "Assistant, sans-serif" },
+       svg, "כיבוי · טווח 35 דק׳");
+    mk("text", { x: xa(8.33) + 4, y: PT - 12, "font-size": 11.5, fill: tok("--ink-3"),
+                 "font-family": "Assistant, sans-serif" }, svg, "קימה · טווח 51 דק׳");
+    mk("text", { x: W - PR + 12, y: PT - 12, "font-size": 11.5, fill: tok("--ink-3"),
+                 "font-family": "Assistant, sans-serif" }, svg, "שינה · מוכנות");
   })();
 
   /* ================= the plan, slot by slot =================
