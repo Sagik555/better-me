@@ -235,6 +235,75 @@
     .arc { animation: draw 1.1s cubic-bezier(.22,.9,.28,1) both; }
     @keyframes draw { from { stroke-dashoffset: var(--circ); } }
   }
+  /* ---- day browser ------------------------------------------------------- */
+  .daybar { display: flex; align-items: center; gap: 14px; background: var(--card);
+            border: 1px solid var(--card-edge); border-radius: 18px; padding: 10px 14px; }
+  .daybar-mid { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .dayname { font-family: "Heebo", sans-serif; font-weight: 700; font-size: 15.5px; }
+  .nav { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 11px; cursor: pointer;
+         background: var(--inset); border: 1px solid var(--card-edge); color: var(--ink);
+         font-size: 20px; line-height: 1; }
+  .nav:hover:not(:disabled) { background: var(--act-dim); color: var(--act-hi); }
+  .nav:disabled { opacity: .35; cursor: default; }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--act-hi); display: block; }
+  .dots i.empty { background: none; border: 1.5px solid var(--hair); }
+  .dots i.now   { box-shadow: 0 0 0 3px var(--act-dim); }
+
+  /* ---- nutrition: the plan, and what actually happened ------------------- */
+  .plan-head { display: flex; align-items: center; justify-content: space-between;
+               gap: 12px; flex-wrap: wrap; background: var(--card);
+               border: 1px solid var(--card-edge); border-radius: 18px 18px 0 0;
+               border-bottom: 0; padding: 15px 20px 13px; }
+  .plan-who { font-size: 13.5px; color: var(--ink-2); }
+  .plan-who b { color: var(--ink); font-weight: 700; }
+  .plan-figs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fig { font-size: 12.5px; color: var(--ink-2); background: var(--inset);
+         border: 1px solid var(--card-edge); border-radius: 999px; padding: 3px 11px;
+         font-variant-numeric: tabular-nums; }
+  .fig b { color: var(--ink); font-weight: 700; }
+
+  .slots { background: var(--card); border: 1px solid var(--card-edge);
+           border-radius: 0 0 18px 18px; padding: 4px 20px 16px; }
+  .slot { display: grid; grid-template-columns: 4px 1fr auto; gap: 0 14px;
+          align-items: start; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .slot:last-child { border-bottom: 0; }
+  .slot .rail { width: 4px; border-radius: 2px; align-self: stretch; background: var(--track); }
+  .slot.hit  .rail { background: var(--good); }
+  .slot.hit  .slot-state { color: var(--good-hi); background: var(--good-dim); }
+  .slot.wait .slot-state { color: var(--none-hi); background: var(--none-dim); }
+  .slot-name { font-family: "Heebo", sans-serif; font-weight: 700; font-size: 14.5px; }
+  .slot-name span { font-weight: 400; color: var(--ink-3); font-size: 12.5px; }
+  .slot-body { font-size: 13px; color: var(--ink-3); line-height: 1.5; margin-top: 2px; }
+  .slot-body em { font-style: normal; color: var(--ink); }
+  .slot-right { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+  .slot-state { font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+                white-space: nowrap; }
+  .slot-kcal { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  .water { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+           background: var(--card); border: 1px solid var(--card-edge);
+           border-radius: 18px; padding: 15px 20px; }
+  .water-bar { flex: 1 1 220px; height: 12px; border-radius: 6px; background: var(--track);
+               position: relative; overflow: hidden; }
+  .water-bar i { position: absolute; inset-block: 0; inset-inline-start: 0; display: block;
+                 border-radius: 6px; background: linear-gradient(90deg, var(--none), var(--none-hi)); }
+  .water-txt { font-size: 13.5px; color: var(--ink-2); }
+  .water-txt b { color: var(--ink); }
+
+  .uploads { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .drop { background: var(--card); border: 1px dashed var(--hair); border-radius: 18px;
+          padding: 16px 18px; display: flex; flex-direction: column; gap: 7px; }
+  .drop b { font-family: "Heebo", sans-serif; font-size: 14.5px; }
+  .drop span { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+  .drop .btn { align-self: flex-start; margin-top: 4px; font-size: 13px; font-weight: 700;
+               font-family: "Heebo", sans-serif; color: var(--act-hi); background: var(--act-dim);
+               border: 1px solid var(--act-dim); border-radius: 10px; padding: 6px 14px;
+               cursor: pointer; }
+  .drop .btn:hover { filter: brightness(1.15); }
+  .soon { font-size: 11.5px; color: var(--watch-hi); background: var(--watch-dim);
+          border-radius: 999px; padding: 2px 9px; align-self: flex-start; font-weight: 700; }
+
   :focus-visible { outline: 2px solid var(--act-hi); outline-offset: 3px; }
 </style>
 
@@ -242,8 +311,19 @@
 
   <header class="masthead">
     <div class="wordmark">Better<span>Me</span></div>
-    <div class="stamp">שישי · 11 בספטמבר 2026 · סונכרן הבוקר</div>
+    <div class="stamp">סונכרן הבוקר · 217 לילות במאגר</div>
   </header>
+
+  <!-- day browser. The dot strip is coverage, not decoration: a hollow dot is a
+       night with no measurement, so the gaps are visible before you click one. -->
+  <nav class="daybar" aria-label="בחירת יום">
+    <button class="nav" type="button" aria-label="יום קודם">‹</button>
+    <div class="daybar-mid">
+      <div class="dayname">יום שישי, 11 בספטמבר 2026</div>
+      <div class="dots" id="dots" role="img" aria-label="14 הימים האחרונים. חמישה מהם בלי מדידה."></div>
+    </div>
+    <button class="nav" type="button" aria-label="יום הבא" disabled>›</button>
+  </nav>
 
   <!-- ============ 1. what to do ============ -->
   <section>
@@ -256,30 +336,82 @@
       <article class="rec" style="--tint:var(--act-dim); --hue:var(--act-hi);">
         <div class="rec-head">
           <span class="pill"><i></i>אנרגיה וריכוז</span>
-          <span class="rec-when">הלילה · אתמול 6:39 ומוכנות 80</span>
+          <span class="rec-when">הלילה, עד 22:40</span>
         </div>
-        <h3>לישון ב-<em>22:40</em> במקום ב-23:32.</h3>
-        <p>בלילות של 8 שעות ומעלה המוכנות שלך יושבת על 89 בממוצע. בלילות כמו אתמול, על 79.</p>
+        <h3>תכבה מסכים ב-22:10 ותהיה במיטה ב-<em>22:40</em>.</h3>
+        <p>אתמול נכנסת ב-23:32 וקמת ב-07:07. אותה שעת קימה עם כיבוי ב-22:40 = 8 שעות 27 דקות, בפעם הראשונה החודש מעל הקצה העליון של הטווח שלך.</p>
         <div class="priced">
-          <span class="tag">‎+52 דק׳ שינה</span>
-          <span class="tag">‎+2.6 נק׳ מוכנות</span>
-          <span><b>ההחלטה שלך.</b> זה מחיר, לא הוראה.</span>
+          <span class="tag">89 במקום 80</span>
+          <span>זה ההפרש בין מוכנות בלילות הארוכים שלך לקצרים, על 211 לילות. <b>ההחלטה שלך.</b></span>
         </div>
       </article>
 
       <article class="rec" style="--tint:var(--bad-dim); --hue:var(--bad-hi);">
         <div class="rec-head">
-          <span class="pill"><i></i>ביצועים באימון</span>
-          <span class="rec-when">השבוע · 30 אימוני כוח נרשמו ב-290 יום</span>
+          <span class="pill"><i></i>תזונה · התוכנית של ענת</span>
+          <span class="rec-when">מהערב</span>
         </div>
-        <h3>הטבעת לא רואה את האימונים שלך.</h3>
-        <p>ב-4 בספטמבר עשית כוח וספינינג. הטבעת רשמה אפס אימונים, אבל 13,137 צעדים ו-597 קלוריות פעילות, הגבוה בשבוע. האימון נמצא בנתוני הפעילות, לא בפיד האימונים. תרשום למטה מה עשית ואצליב לבד.</p>
+        <h3>2.5 ליטר מים ביום. נמדדו <em>0 ימים</em>.</h3>
+        <p>זה סעיף 2 בתוכנית שענת נתנה לך ב-21 ביולי, וזה הדבר היחיד בה שאף פעם לא נשאלת עליו. סעיף 1 שלה, רישום יומי, עומד על 2 ימים מתוך 6.</p>
         <div class="priced">
-          <span class="tag">0.7 מול 4-5 שהצהרת</span>
-          <span>שבועיים של רישום ונדע אם זה פער מדידה או פער אמיתי.</span>
+          <span class="tag">שאלה חדשה בשאלון הערב</span>
+          <span>שתי ספרות בתשובה: כמה ארוחות מתוך 5, כמה ליטר.</span>
         </div>
       </article>
 
+      <article class="rec" style="--tint:var(--watch-dim); --hue:var(--watch-hi);">
+        <div class="rec-head">
+          <span class="pill"><i></i>ביצועים באימון</span>
+          <span class="rec-when">הפער שצריך להכריע לפני כל דיבור על ביצועים</span>
+        </div>
+        <h3>רישום האימונים בטבעת <em>נמוג</em>, הוא לא נעצר.</h3>
+        <p>49 רשומות בדצמבר, 40 בינואר, 19 בפברואר, 7 במרץ, 2 במאי, אחת ביוני. יולי ואוגוסט: אפס. ב-4 בספטמבר עשית 80 דקות כוח וספינינג ואין להן שורה, אבל יש 13,137 צעדים ו-597 קלוריות פעילות, הגבוה בשבוע.</p>
+        <div class="priced">
+          <span class="tag">26 מתוך 30 אימוני הכוח הם מדצמבר-פברואר</span>
+          <span>דעיכה כזאת היא בדרך כלל שינוי בשימוש באפליקציה, לא באימונים. תרשום למטה ואצליב.</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ nutrition: the plan is the reference ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>תזונה</h2>
+      <span class="sec-note">מול התוכנית של ענת, לא מול המלצות כלליות. יעד אמיתי, אז אפשר לומר "קרה" או "לא קרה".</span>
+    </div>
+
+    <div class="plan-head">
+      <div class="plan-who"><b>ענת היימן</b>, דיאטנית קלינית · תוכנית מ-21.7.2026 · מטרה: חיטוב ובריאות</div>
+      <div class="plan-figs">
+        <span class="fig"><b>2,400</b> קלוריות</span>
+        <span class="fig"><b>5</b> ארוחות</span>
+        <span class="fig"><b>2.5</b> ליטר מים</span>
+      </div>
+    </div>
+    <div class="slots" id="slots"></div>
+
+    <div class="water">
+      <span class="water-txt"><b>מים</b> · יעד 2.5 ליטר</span>
+      <div class="water-bar" role="img" aria-label="מים: אפס ימים נמדדו מתוך יעד של 2.5 ליטר ליום.">
+        <i style="width:0%"></i>
+      </div>
+      <span class="water-txt">לא נמדד <b>אף יום</b> · השאלה נכנסה לשאלון הערב</span>
+    </div>
+
+    <div class="uploads">
+      <div class="drop">
+        <b>תוכנית תזונה</b>
+        <span>התוכנית של ענת מ-21.7 טעונה ומפורקת לחמש ארוחות. תוכנית חדשה ממנה תחליף אותה, והלוח למעלה יתעדכן לפיה.</span>
+        <button class="btn" type="button">העלה תוכנית חדשה (PDF)</button>
+      </div>
+      <div class="drop">
+        <b>תמונה של הצלחת</b>
+        <span>במקום לתאר מה אכלת, תצלם. אני מזהה את המנות ומשווה אותן לרשימת המנות של ענת.</span>
+        <span class="soon">עוד לא בנוי · קריאת תמונות מהמייל</span>
+        <button class="btn" type="button" disabled style="opacity:.45;cursor:default">צרף תמונה</button>
+      </div>
     </div>
   </section>
 
@@ -337,7 +469,7 @@
           <span class="ev">קלוריות פעילות <b>597</b> · מול 375 יום קודם</span>
           <span class="ev nil">מוכנות למחרת <b>חסרה</b> · הטבעת לא סנכרנה</span>
         </div>
-        <p style="font-size:13px;color:var(--ink-3)">מסקנה: הטבעת כן ראתה את המאמץ, רק לא סיווגה אותו כאימון. עוד שמונה ימים כאלה ואפשר יהיה לבדוק אם אימון ערב פוגע לך בשינה.</p>
+        <p style="font-size:13px;color:var(--ink-3)">מסקנה: הטבעת ראתה את המאמץ, רק לא סיווגה אותו כאימון. בפעם הבאה שאתה באפליקציה, תאשר את האימון — זה מה שמחזיר את הפיד. עוד שמונה ימים רשומים ואפשר לבדוק אם אימון ערב פוגע לך בשינה.</p>
       </div>
     </div>
   </section>
@@ -423,6 +555,51 @@
     return n;
   };
 
+  /* ================= day browser dots =================
+     Filled = a night with a sleep measurement, hollow = nothing recorded. The
+     coverage is the point: five of the last eight are hollow. */
+  (function () {
+    var HAS = [1,1,1,1,0,1,1,1,0,0,0,0,0,1];   // 29.8 .. 11.9
+    var el = document.getElementById("dots");
+    HAS.forEach(function (h, i) {
+      var d = document.createElement("i");
+      d.className = (h ? "" : "empty ") + (i === HAS.length - 1 ? "now" : "");
+      el.appendChild(d);
+    });
+  })();
+
+  /* ================= the plan, slot by slot =================
+     Adherence, not statistics: the plan says a thing happens and either it was
+     recorded or it was not. Everything unrecorded says so rather than
+     rendering as a zero. */
+  (function () {
+    var SLOTS = [
+      { name: "בבית", when: "עם הקימה", what: "2 כוסות מים", kcal: 0, got: null },
+      { name: "בוקר", when: "", what: "2-4 פרוסות לחם חלבון + 2 ביצים + גבינה/טונה/קוטג׳ + ירקות", kcal: 500, got: null },
+      { name: "לפני אימון כוח", when: "", what: "בננה/תפוח/2 תמרים + 10 קשיו טבעי", kcal: 200, got: null },
+      { name: "צהריים", when: "עד 14:00", what: "חלבון וירקות: עוף, דג או בשר + ירקות", kcal: 500, got: null },
+      { name: "אחר הצהריים", when: "", what: "יוגורט יווני + פרי", kcal: 200, got: null },
+      { name: "ערב", when: "", what: "ירקות + טחינה/אבוקדו/שמן זית + 3-4 מנות חלבון + פחמימה + יוגורט לקינוח",
+        kcal: 1000, got: "נרשם: סיום ב-20:00 · “המבורגר”" }
+    ];
+    var host = document.getElementById("slots");
+    SLOTS.forEach(function (s) {
+      var row = document.createElement("div");
+      row.className = "slot " + (s.got ? "hit" : "wait");
+      row.innerHTML =
+        '<span class="rail"></span>' +
+        '<div><div class="slot-name">' + s.name +
+          (s.when ? ' <span>' + s.when + '</span>' : '') + '</div>' +
+          '<div class="slot-body">' + s.what +
+          (s.got ? '<br><em>' + s.got + '</em>' : '') + '</div></div>' +
+        '<div class="slot-right">' +
+          '<span class="slot-state">' + (s.got ? "נרשם" : "לא נמדד") + '</span>' +
+          '<span class="slot-kcal">' + (s.kcal ? s.kcal.toLocaleString("en-US") + " קל׳" : "—") + '</span>' +
+        '</div>';
+      host.appendChild(row);
+    });
+  })();
+
   /* ================= the day timeline =================
      Window runs 08:00 to 08:00 so a normal night sits whole inside it and the
      wake-up does not wrap off the end. Time runs left to right. */
@@ -505,10 +682,10 @@
       sub: "לחץ גבוה · נמדד ב-176 ימים", state: "good", label: "יציב",
       what: "דקות ביום שבהן אורה סיווגה את מצב הגוף כלחץ גבוה, לפי דופק, HRV, טמפרטורה ותנועה. זה מדד פיזיולוגי, לא הרגשה.",
       src: "ימים שאורה החזירה עליהם שורה מאופסת נזרקו ולא נספרו כאפס." },
-    { name: "אימוני כוח", value: 0.7, max: 4.5, base: null, unitLabel: "בשבוע",
-      sub: "נמדד, מול 4-5 שהצהרת", state: "bad", label: "פער",
-      what: "נספר מרשומות האימון של אורה שסומנו strengthTraining, גם אוטומטיות וגם ידניות. 30 רשומות ב-290 יום.",
-      src: "אורה מזהה הליכה, ריצה ואופניים טוב, ואימון כוח גרוע. הפיד הזה גם נעצר ב-14 ביוני. אל תקרא את המספר הזה כאמת על האימונים שלך." },
+    { name: "אימונים שנרשמו", value: 0.2, max: 4.5, base: null, unitLabel: "בשבוע",
+      sub: "ב-90 הימים האחרונים · מדידה, לא אמת", state: "bad", label: "הרישום נמוג",
+      what: "אימוני כוח מרשומות האימון של אורה, אוטומטיות וידניות כאחד. 30 בסך הכל מאז נובמבר, אבל 26 מהן בדצמבר-פברואר. ב-90 הימים האחרונים יש שתיים: 14 ביוני ו-10 בספטמבר.",
+      src: "אורה מזהה הליכה, ריצה ואופניים טוב ואימון כוח גרוע, ורשומה נספרת רק אחרי שאישרת אותה באפליקציה. דעיכה מ-49 רשומות בחודש לאפס היא כמעט תמיד שינוי בשימוש באפליקציה. אל תקרא את המספר הזה כאמת על כמה שהתאמנת." },
     { name: "תזונה", value: 2, max: 6, base: null, unitLabel: "מתוך 6 ימים",
       sub: "שאלונים שנענו · קפאין, אלכוהול, ארוחות", state: "none", label: "חסרות תשובות",
       what: "אין פה חיישן. כל מה שידוע על אוכל, קפה ואלכוהול מגיע מהתשובות שלך במייל: מספר כוסות, שעת הקפה האחרונה, שעת הארוחה האחרונה, יחידות אלכוהול.",
