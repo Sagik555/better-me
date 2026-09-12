@@ -14,6 +14,7 @@
     "checkin:morning": "node scripts/send-checkin.mjs morning",
     "checkin:evening": "node scripts/send-checkin.mjs evening",
     "test:parser": "node scripts/test-parser.mjs",
+    "test:profile": "node scripts/test-profile-parser.mjs",
     "replies": "node scripts/read-replies.mjs",
     "nightly": "node scripts/send-nightly.mjs",
     "test:bedtime": "node scripts/test-bedtime-claim.mjs",
@@ -21,6 +22,8 @@
     "battery": "node scripts/battery-watch.mjs",
     "tick": "node scripts/tick.mjs",
     "build:profile": "node scripts/build-profile.mjs",
+    "profile:ask": "node scripts/profile-ask.mjs",
+    "profile:read": "node scripts/profile-read.mjs",
     "secrets:gh": "node scripts/set-gh-secrets.mjs"
   },
   "dependencies": {

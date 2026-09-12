@@ -101,6 +101,13 @@ if ((inWindow(INGEST) && !haveLastNight) || wantMorning || wantNightly) {
   plan.push(['ingest', ['scripts/ingest.mjs']]);
 }
 if (inWindow(REPLIES)) plan.push(['replies', ['scripts/read-replies.mjs']]);
+// The profile: asked once, then reviewed every 75 days. Both scripts decide
+// for themselves whether there is anything to do, and profile-ask holds a
+// seven-day cooldown so an unanswered mail is not re-sent every morning.
+if (wantMorning) {
+  plan.push(['profile:read', ['scripts/profile-read.mjs']]);
+  plan.push(['profile:ask', ['scripts/profile-ask.mjs']]);
+}
 if (wantMorning) plan.push(['checkin:morning', ['scripts/send-checkin.mjs', 'morning']]);
 if (wantEvening) plan.push(['checkin:evening', ['scripts/send-checkin.mjs', 'evening']]);
 if (wantNightly) plan.push(['nightly', ['scripts/send-nightly.mjs']]);
