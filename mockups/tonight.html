@@ -1,0 +1,674 @@
+<title>מה עושים הלילה</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;600;700&display=swap">
+<style>
+  /* =======================================================================
+     Dark-first: the glow only reads on a dark ground. Light mode is designed
+     separately, not inverted. Every colour is a token so both resolve as sets.
+     ===================================================================== */
+  :root {
+    --bg:        #0A0E1C;
+    --bg-glow-1: rgba(139,92,246,.20);
+    --bg-glow-2: rgba(13,148,136,.16);
+    --card:      linear-gradient(158deg, #171D33 0%, #11162A 62%, #0E1324 100%);
+    --card-edge: rgba(255,255,255,.075);
+    --card-lift: rgba(255,255,255,.045);
+    --inset:     rgba(255,255,255,.035);
+
+    --ink:   #EEF1FB;
+    --ink-2: #A8B0CC;
+    --ink-3: #6E7799;
+    --rule:  rgba(255,255,255,.08);
+    --hair:  rgba(255,255,255,.14);
+
+    --good:  #10B981; --good-hi: #5EEAD4; --good-dim: rgba(16,185,129,.16);
+    --watch: #F59E0B; --watch-hi:#FCD34D; --watch-dim:rgba(245,158,11,.15);
+    --bad:   #F43F5E; --bad-hi:  #FB7185; --bad-dim:  rgba(244,63,94,.15);
+    --none:  #64748B; --none-hi: #94A3B8; --none-dim: rgba(100,116,139,.14);
+    --act:   #8B5CF6; --act-hi:  #C4B5FD; --act-dim:  rgba(139,92,246,.18);
+    --track: rgba(255,255,255,.07);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:        #EDEFF8;
+      --bg-glow-1: rgba(139,92,246,.15);
+      --bg-glow-2: rgba(13,148,136,.12);
+      --card:      linear-gradient(158deg, #FFFFFF 0%, #FAFAFE 60%, #F3F4FC 100%);
+      --card-edge: rgba(16,20,40,.09);
+      --card-lift: rgba(16,20,40,.04);
+      --inset:     rgba(16,20,40,.035);
+      --ink:   #131931; --ink-2: #4B5473; --ink-3: #7A83A3;
+      --rule:  rgba(16,20,40,.10); --hair: rgba(16,20,40,.18);
+      --good:  #059669; --good-hi: #0D9488; --good-dim: rgba(5,150,105,.13);
+      --watch: #B45309; --watch-hi:#A16207; --watch-dim:rgba(180,83,9,.13);
+      --bad:   #E11D48; --bad-hi:  #BE123C; --bad-dim:  rgba(225,29,72,.12);
+      --none:  #64748B; --none-hi: #475569; --none-dim: rgba(100,116,139,.13);
+      --act:   #7C3AED; --act-hi:  #6D28D9; --act-dim:  rgba(124,58,237,.13);
+      --track: rgba(16,20,40,.08);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:        #EDEFF8;
+    --bg-glow-1: rgba(139,92,246,.15);
+    --bg-glow-2: rgba(13,148,136,.12);
+    --card:      linear-gradient(158deg, #FFFFFF 0%, #FAFAFE 60%, #F3F4FC 100%);
+    --card-edge: rgba(16,20,40,.09);
+    --card-lift: rgba(16,20,40,.04);
+    --inset:     rgba(16,20,40,.035);
+    --ink:   #131931; --ink-2: #4B5473; --ink-3: #7A83A3;
+    --rule:  rgba(16,20,40,.10); --hair: rgba(16,20,40,.18);
+    --good:  #059669; --good-hi: #0D9488; --good-dim: rgba(5,150,105,.13);
+    --watch: #B45309; --watch-hi:#A16207; --watch-dim:rgba(180,83,9,.13);
+    --bad:   #E11D48; --bad-hi:  #BE123C; --bad-dim:  rgba(225,29,72,.12);
+    --none:  #64748B; --none-hi: #475569; --none-dim: rgba(100,116,139,.13);
+    --act:   #7C3AED; --act-hi:  #6D28D9; --act-dim:  rgba(124,58,237,.13);
+    --track: rgba(16,20,40,.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    direction: rtl; margin: 0;
+    background:
+      radial-gradient(900px 520px at 84% -6%, var(--bg-glow-1), transparent 66%),
+      radial-gradient(760px 480px at 6% 30%, var(--bg-glow-2), transparent 62%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: "Assistant", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1040px; margin: 0 auto; padding: 26px 18px 76px;
+          display: flex; flex-direction: column; gap: 30px; }
+
+  .masthead { display: flex; align-items: baseline; justify-content: space-between;
+              gap: 14px; flex-wrap: wrap; }
+  .wordmark { font-family: "Heebo", system-ui, sans-serif; font-weight: 900;
+              font-size: 20px; letter-spacing: -.02em; }
+  .wordmark span { color: var(--act-hi); }
+  .stamp { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  section { display: flex; flex-direction: column; gap: 13px; }
+  h2 { font-family: "Heebo", system-ui, sans-serif; font-weight: 900; font-size: 20px;
+       margin: 0; letter-spacing: -.02em; }
+  .sec-head { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap;
+              border-bottom: 1px solid var(--rule); padding-bottom: 9px; }
+  .sec-note { font-size: 13px; color: var(--ink-3); }
+
+  /* ---- recommendations --------------------------------------------------- */
+  .recs { display: grid; gap: 12px; }
+  .rec { position: relative; overflow: hidden; background: var(--card);
+         border: 1px solid var(--card-edge); border-radius: 22px;
+         padding: 22px 26px 18px; display: flex; flex-direction: column; gap: 11px; }
+  .rec::before { content: ""; position: absolute; inset: -70% -20% auto -20%; height: 220%;
+                 background: radial-gradient(closest-side, var(--tint), transparent 72%);
+                 pointer-events: none; }
+  .rec > * { position: relative; }
+  .rec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; font-size: 12px;
+          font-weight: 700; letter-spacing: .06em; padding: 4px 12px;
+          border-radius: 999px; border: 1px solid currentColor;
+          color: var(--hue); background: var(--tint); }
+  .pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .rec-when { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .rec h3 { font-family: "Heebo", system-ui, sans-serif; font-weight: 900;
+            font-size: clamp(23px, 3.4vw, 32px); line-height: 1.22; margin: 0;
+            text-wrap: balance; letter-spacing: -.02em; }
+  .rec h3 em { font-style: normal; color: var(--hue); }
+  .rec p { margin: 0; font-size: 14.5px; color: var(--ink-2); max-width: 62ch; }
+  .priced { display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+            padding-top: 11px; border-top: 1px solid var(--rule);
+            font-size: 13.5px; color: var(--ink-3); }
+  .tag { font-family: "Heebo", sans-serif; font-weight: 700; font-size: 13px;
+         color: var(--hue); background: var(--tint); padding: 3px 11px;
+         border-radius: 8px; font-variant-numeric: tabular-nums; }
+  .priced b { color: var(--ink); }
+
+  /* ---- the day timeline: the page's signature component ------------------ */
+  .day { background: var(--card); border: 1px solid var(--card-edge);
+         border-radius: 20px; padding: 18px 18px 8px; overflow-x: auto; }
+  .day svg { display: block; width: 100%; height: auto; min-width: 640px; }
+  .day-legend { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 2px 10px; }
+  .dl { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px;
+        color: var(--ink-2); background: var(--inset); border: 1px solid var(--card-edge);
+        border-radius: 999px; padding: 4px 12px; font-variant-numeric: tabular-nums; }
+  .dl b { color: var(--ink); font-weight: 700; }
+  .dl.miss { color: var(--none-hi); border-style: dashed; }
+
+  /* ---- gauges + their explainers ----------------------------------------- */
+  .rings { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(184px, 1fr)); }
+  .ring { background: var(--card); border: 1px solid var(--card-edge); border-radius: 20px;
+          padding: 18px 14px 12px; display: flex; flex-direction: column;
+          align-items: center; gap: 9px; text-align: center; }
+  .ring svg { width: 132px; height: 132px; display: block; }
+  .ring-name { font-family: "Heebo", sans-serif; font-weight: 700; font-size: 15px; }
+  .ring-sub { font-size: 12.5px; color: var(--ink-3); line-height: 1.45;
+              font-variant-numeric: tabular-nums; }
+  .state { font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+           padding: 2px 10px; border-radius: 999px; }
+  .s-good{color:var(--good-hi);background:var(--good-dim)}
+  .s-watch{color:var(--watch-hi);background:var(--watch-dim)}
+  .s-bad{color:var(--bad-hi);background:var(--bad-dim)}
+  .s-none{color:var(--none-hi);background:var(--none-dim)}
+
+  details.explain { width: 100%; margin-top: 2px; border-top: 1px solid var(--rule); }
+  details.explain summary {
+    cursor: pointer; list-style: none; padding: 9px 2px 7px;
+    font-size: 12.5px; color: var(--ink-3); display: flex;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  details.explain summary::-webkit-details-marker { display: none; }
+  details.explain summary::after {
+    content: ""; width: 6px; height: 6px; border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor; transform: rotate(45deg) translateY(-1px);
+    transition: transform .18s ease;
+  }
+  details.explain[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+  details.explain .body { font-size: 12.5px; color: var(--ink-2); text-align: start;
+                          line-height: 1.6; padding: 0 2px 10px; }
+  details.explain .body b { color: var(--ink); }
+  details.explain .body .src { display: block; margin-top: 6px; color: var(--ink-3); font-size: 11.5px; }
+
+  /* ---- the log box ------------------------------------------------------- */
+  .logbox { background: var(--card); border: 1px solid var(--card-edge);
+            border-radius: 20px; padding: 20px 22px 18px;
+            display: flex; flex-direction: column; gap: 13px; }
+  .field { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+  .field textarea {
+    flex: 1 1 320px; min-height: 74px; resize: vertical;
+    background: var(--inset); color: var(--ink); border: 1px solid var(--card-edge);
+    border-radius: 14px; padding: 12px 14px; font: inherit; font-size: 14.5px;
+    line-height: 1.55; direction: rtl;
+  }
+  .field textarea::placeholder { color: var(--ink-3); }
+  .send { flex: 0 0 auto; align-self: stretch; min-width: 108px;
+          background: var(--act); color: #fff; border: 0; border-radius: 14px;
+          font-family: "Heebo", sans-serif; font-weight: 700; font-size: 15px;
+          cursor: pointer; padding: 0 20px; }
+  .send:hover { filter: brightness(1.1); }
+  .hint { font-size: 12.5px; color: var(--ink-3); }
+
+  .match { border: 1px solid var(--card-edge); border-radius: 16px;
+           background: var(--inset); padding: 15px 17px; display: flex;
+           flex-direction: column; gap: 10px; }
+  .match-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+                font-size: 13px; color: var(--ink-3); }
+  .match-head .pill { font-size: 11.5px; padding: 3px 10px; }
+  .match p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .match p b { color: var(--ink); }
+  .evid { display: flex; flex-wrap: wrap; gap: 7px; }
+  .ev { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink-2);
+        background: var(--card-lift); border: 1px solid var(--card-edge);
+        border-radius: 9px; padding: 4px 11px; }
+  .ev b { color: var(--good-hi); font-weight: 700; }
+  .ev.nil b { color: var(--bad-hi); }
+
+  /* ---- plots ------------------------------------------------------------- */
+  .plot { background: var(--card); border: 1px solid var(--card-edge);
+          border-radius: 20px; padding: 18px 16px 10px; overflow-x: auto; }
+  .plot svg { display: block; width: 100%; height: auto; min-width: 540px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px;
+            color: var(--ink-2); padding: 8px 4px 2px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .swatch.gap { background: repeating-linear-gradient(45deg, var(--hair) 0 3px, transparent 3px 6px);
+                border: 1px solid var(--rule); }
+
+  .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .link { background: var(--card); border: 1px solid var(--card-edge); border-radius: 18px;
+          padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 11px; }
+  .link h3 { margin: 0; font-size: 15.5px; font-weight: 700; font-family: "Heebo", sans-serif; }
+  .link p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  .meta { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .settled { background: none; border: 1px dashed var(--rule); }
+  .settled h3 { color: var(--ink-2); }
+
+  .supply { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; background: var(--card-lift);
+          border: 1px solid var(--card-edge); border-radius: 999px; padding: 6px 14px;
+          font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .chip b { color: var(--ink); font-weight: 700; }
+  .cdot { width: 8px; height: 8px; border-radius: 50%; }
+  .cdot.ok { background: var(--good); box-shadow: 0 0 8px var(--good); }
+  .cdot.watch { background: var(--watch); box-shadow: 0 0 8px var(--watch); }
+  footer { font-size: 12.5px; color: var(--ink-3); line-height: 1.7; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .arc { animation: draw 1.1s cubic-bezier(.22,.9,.28,1) both; }
+    @keyframes draw { from { stroke-dashoffset: var(--circ); } }
+  }
+  :focus-visible { outline: 2px solid var(--act-hi); outline-offset: 3px; }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="wordmark">Better<span>Me</span></div>
+    <div class="stamp">שישי · 11 בספטמבר 2026 · סונכרן הבוקר</div>
+  </header>
+
+  <!-- ============ 1. what to do ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>מה לעשות</h2>
+      <span class="sec-note">שתיים. כל אחת קשורה למטרה שהגדרת ומתומחרת מהנתונים שלך.</span>
+    </div>
+    <div class="recs">
+
+      <article class="rec" style="--tint:var(--act-dim); --hue:var(--act-hi);">
+        <div class="rec-head">
+          <span class="pill"><i></i>אנרגיה וריכוז</span>
+          <span class="rec-when">הלילה · אתמול 6:39 ומוכנות 80</span>
+        </div>
+        <h3>לישון ב-<em>22:40</em> במקום ב-23:32.</h3>
+        <p>בלילות של 8 שעות ומעלה המוכנות שלך יושבת על 89 בממוצע. בלילות כמו אתמול, על 79.</p>
+        <div class="priced">
+          <span class="tag">‎+52 דק׳ שינה</span>
+          <span class="tag">‎+2.6 נק׳ מוכנות</span>
+          <span><b>ההחלטה שלך.</b> זה מחיר, לא הוראה.</span>
+        </div>
+      </article>
+
+      <article class="rec" style="--tint:var(--bad-dim); --hue:var(--bad-hi);">
+        <div class="rec-head">
+          <span class="pill"><i></i>ביצועים באימון</span>
+          <span class="rec-when">השבוע · 30 אימוני כוח נרשמו ב-290 יום</span>
+        </div>
+        <h3>הטבעת לא רואה את האימונים שלך.</h3>
+        <p>ב-4 בספטמבר עשית כוח וספינינג. הטבעת רשמה אפס אימונים, אבל 13,137 צעדים ו-597 קלוריות פעילות, הגבוה בשבוע. האימון נמצא בנתוני הפעילות, לא בפיד האימונים. תרשום למטה מה עשית ואצליב לבד.</p>
+        <div class="priced">
+          <span class="tag">0.7 מול 4-5 שהצהרת</span>
+          <span>שבועיים של רישום ונדע אם זה פער מדידה או פער אמיתי.</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 2. the day, hour by hour ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>ציר היום</h2>
+      <span class="sec-note">5 בספטמבר, היום היחיד שענית עליו במלואו. קפאין, אוכל, אלכוהול ושינה על אותו ציר.</span>
+    </div>
+    <div class="day">
+      <svg id="day" viewBox="0 0 940 186" role="img"
+           aria-label="ציר יום מ-08:00 עד 08:00 למחרת. קפאין אחרון ב-12:00 אחרי 4 כוסות, ארוחה אחרונה ב-20:00, יחידת אלכוהול אחת בשעה לא ידועה, שינה מ-23:44 עד 07:01."></svg>
+      <div class="day-legend">
+        <span class="dl">קפאין <b>4 כוסות</b> · אחרונה 12:00 · <b>11 שע׳ 44 ד׳</b> לפני השינה</span>
+        <span class="dl">ארוחה אחרונה <b>20:00</b> · <b>3 שע׳ 44 ד׳</b> לפני השינה</span>
+        <span class="dl miss">אלכוהול <b>1 יחידה</b> · שעה לא נרשמה</span>
+        <span class="dl">שינה <b>7 שע׳ 17 ד׳</b> · 23:44 עד 07:01</span>
+        <span class="dl">לחץ גבוה <b>60 דק׳</b> באותו יום</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. gauges ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>איפה אתה עומד</h2>
+      <span class="sec-note">הקו הדק על כל טבעת הוא הממוצע שלך ל-90 יום. פתח כל אחת כדי לראות איך היא נמדדת.</span>
+    </div>
+    <div class="rings" id="rings"></div>
+  </section>
+
+  <!-- ============ 4. log a workout ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>רישום אימון</h2>
+      <span class="sec-note">כתוב בשפה חופשית. אחפש את זה בנתוני הטבעת של אותו יום.</span>
+    </div>
+    <div class="logbox">
+      <div class="field">
+        <label class="visually-hidden" for="log">מה עשית</label>
+        <textarea id="log" rows="3">אתמול עשיתי אימון כוח 50 דק ואז עוד 30 דק ספינינג במאמץ בינוני</textarea>
+        <button class="send" type="button">הצלב</button>
+      </div>
+      <div class="hint">אפשר לכתוב "אתמול", "יום שלישי בבוקר", "שעה וחצי ריצה". שעה, משך ומאמץ עוזרים; מה שחסר יישאר חסר ולא יומצא.</div>
+
+      <div class="match">
+        <div class="match-head">
+          <span class="pill" style="--hue:var(--good-hi); --tint:var(--good-dim);"><i></i>נמצאה התאמה</span>
+          <span>4 בספטמבר 2026</span>
+        </div>
+        <p>רשמת <b>50 דק׳ כוח</b> ועוד <b>30 דק׳ ספינינג, מאמץ בינוני</b>. בפיד האימונים של הטבעת אין באותו יום כלום, אבל בנתוני הפעילות היום הזה בולט.</p>
+        <div class="evid">
+          <span class="ev nil">רשומות אימון <b>0</b></span>
+          <span class="ev">צעדים <b>13,137</b> · הגבוה בשבוע</span>
+          <span class="ev">קלוריות פעילות <b>597</b> · מול 375 יום קודם</span>
+          <span class="ev nil">מוכנות למחרת <b>חסרה</b> · הטבעת לא סנכרנה</span>
+        </div>
+        <p style="font-size:13px;color:var(--ink-3)">מסקנה: הטבעת כן ראתה את המאמץ, רק לא סיווגה אותו כאימון. עוד שמונה ימים כאלה ואפשר יהיה לבדוק אם אימון ערב פוגע לך בשינה.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. trend ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>מוכנות, 28 יום</h2>
+      <span class="sec-note">לילה חסר הוא חסר, לא אפס. חמישה מתוך שמונת הלילות האחרונים נעלמו עם הטבעת הישנה.</span>
+    </div>
+    <div class="plot">
+      <svg id="trend" viewBox="0 0 900 250" role="img"
+           aria-label="ציון מוכנות מ-15 באוגוסט עד 11 בספטמבר, נע בין 67 ל-92. שבע מדידות חסרות, חמש מהן ברצף בסוף התקופה."></svg>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--act-hi)"></i> ציון מוכנות</span>
+        <span><i class="swatch gap"></i> לילה בלי מדידה</span>
+        <span><i class="swatch" style="background:var(--good-hi)"></i> הטבעת החדשה, לילה ראשון</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. known links ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>מה כבר ידוע עליך</h2>
+      <span class="sec-note">נבדק על הנתונים שלך בלבד.</span>
+    </div>
+    <div class="links">
+      <article class="link">
+        <h3>שינה ארוכה יותר ← מוכנות גבוהה יותר</h3>
+        <svg class="slope" viewBox="0 0 300 106" role="img"
+             aria-label="6 שעות 43 דקות שינה נותנות מוכנות 79, 8 שעות 17 דקות נותנות 89."></svg>
+        <p>מ-6 שעות 43 דקות ל-8 שעות 17 דקות שינה, ציון המוכנות עולה מ-79 ל-89.</p>
+        <div class="meta">n=211 · rho 0.638 · q 0.0015 · מבוסס</div>
+      </article>
+      <article class="link">
+        <h3>מיטה מאוחרת ← מוכנות נמוכה יותר</h3>
+        <svg class="slope" viewBox="0 0 300 106" role="img"
+             aria-label="שינה ב-22:00 נותנת מוכנות 87, חצות נותנת 81."></svg>
+        <p>משעה 22:00 לחצות, ציון המוכנות יורד מ-87 ל-81.</p>
+        <div class="meta">n=211 · rho ‎-0.364 · q 0.0015 · מבוסס</div>
+      </article>
+      <article class="link settled">
+        <h3>פיזור שעת השינה — נסגר</h3>
+        <p>נבדק על 210 לילות. כמה שעת השינה משתנה מיום ליום לא מנבא אצלך כלום. השאלה נסגרה ולא תעלה שוב.</p>
+        <div class="meta">n=210 · עמדה: להתעלם · 6 בספטמבר 2026</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 7. supply ============ -->
+  <section>
+    <div class="sec-head">
+      <h2>קו האספקה</h2>
+      <span class="sec-note">בלי סנכרון אין נתונים, ובלי נתונים אין מה להמליץ.</span>
+    </div>
+    <div class="supply">
+      <span class="chip"><i class="cdot ok"></i> סונכרן <b>הבוקר</b></span>
+      <span class="chip"><i class="cdot watch"></i> סוללה <b>1.78%</b> לשעה · 2.3 ימים</span>
+      <span class="chip"><i class="cdot ok"></i> טבעת חלופית, יום <b>2</b></span>
+      <span class="chip"><i class="cdot ok"></i> <b>217</b> לילות במאגר</span>
+      <span class="chip"><i class="cdot watch"></i> <b>2</b> שאלונים נענו</span>
+    </div>
+    <footer>
+      הטבעת הקודמת התרוקנה ב-9.23% לשעה, פי 11 מהמפרט, ולכן חמישה לילות בגרף ריקים.
+      החלופית על 1.78% — עדיין פי 2.1 מהקצה האיטי של המפרט, אבל זו מדידה אחת שהתחילה מ-69% ועם עדכון קושחה באמצע.
+    </footer>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var ns = "http://www.w3.org/2000/svg";
+  var css = getComputedStyle(document.documentElement);
+  var tok = function (n) { return css.getPropertyValue(n).trim(); };
+  var mk = function (tag, attrs, parent, txt) {
+    var n = document.createElementNS(ns, tag);
+    for (var k in attrs) { n.setAttribute(k, attrs[k]); }
+    if (txt != null) { n.textContent = txt; }
+    if (parent) { parent.appendChild(n); }
+    return n;
+  };
+
+  /* ================= the day timeline =================
+     Window runs 08:00 to 08:00 so a normal night sits whole inside it and the
+     wake-up does not wrap off the end. Time runs left to right. */
+  (function () {
+    var svg = document.getElementById("day");
+    var W = 940, H = 186, PL = 26, PR = 26, AX = 118;   // AX = y of the axis
+    var iw = W - PL - PR, START = 8 * 60, SPAN = 24 * 60;
+    var at = function (hhmm) {                            // "23:44" -> x
+      var p = hhmm.split(":"), m = (+p[0]) * 60 + (+p[1]);
+      return PL + (((m - START) + SPAN) % SPAN) / SPAN * iw;
+    };
+
+    var defs = mk("defs", {}, svg);
+    var sg = mk("linearGradient", { id: "sleepFill", x1: "0", y1: "0", x2: "0", y2: "1" }, defs);
+    mk("stop", { offset: "0%", "stop-color": tok("--act-hi"), "stop-opacity": ".40" }, sg);
+    mk("stop", { offset: "100%", "stop-color": tok("--act-hi"), "stop-opacity": ".05" }, sg);
+
+    // the sleep block, drawn first so markers sit on top
+    var sA = at("23:44"), sB = at("07:01");
+    mk("rect", { x: sA, y: AX - 46, width: sB - sA, height: 46, rx: 8,
+                 fill: "url(#sleepFill)" }, svg);
+    mk("line", { x1: sA, y1: AX - 46, x2: sB, y2: AX - 46,
+                 stroke: tok("--act-hi"), "stroke-width": 2 }, svg);
+    mk("text", { x: (sA + sB) / 2, y: AX - 19, "text-anchor": "middle",
+                 "font-family": "Heebo, sans-serif", "font-weight": 700, "font-size": 14,
+                 fill: tok("--ink") }, svg, "7 שע׳ 17 ד׳ שינה");
+
+    // the axis: one hairline, ticks only where a label sits
+    mk("line", { x1: PL, y1: AX, x2: PL + iw, y2: AX, stroke: tok("--hair"),
+                 "stroke-width": 1 }, svg);
+    ["08:00", "12:00", "16:00", "20:00", "00:00", "04:00"].forEach(function (t) {
+      var X = at(t);
+      mk("line", { x1: X, y1: AX, x2: X, y2: AX + 6, stroke: tok("--hair"), "stroke-width": 1 }, svg);
+      mk("text", { x: X, y: AX + 21, "text-anchor": "middle", "font-size": 11.5,
+                   fill: tok("--ink-3"), "font-family": "Assistant, sans-serif" }, svg, t);
+    });
+
+    // The four coffees are four dots and ONE label on the last of them. Labelling
+    // every cup put four captions inside twenty minutes of axis and collided them
+    // with the 12:00 tick. Everything is labelled above the axis so the hour
+    // scale below stays a clean single line.
+    var CUPS = ["08:10", "10:00", "11:15", "12:00"];
+    var cupCol = tok("--watch-hi");
+    CUPS.forEach(function (t, i) {
+      mk("circle", { cx: at(t), cy: AX, r: i === CUPS.length - 1 ? 4.5 : 3.4,
+                     fill: cupCol, opacity: i === CUPS.length - 1 ? 1 : .55 }, svg);
+    });
+
+    var EV = [
+      { t: "12:00", lab: "קפה אחרון", note: "4 כוסות מתחילת היום", col: "--watch-hi", known: true },
+      { t: "20:00", lab: "ארוחה אחרונה", note: "3 שע׳ 44 ד׳ לפני השינה", col: "--good-hi", known: true },
+      { t: "22:00", lab: "אלכוהול", note: "1 יחידה · שעה לא נרשמה", col: "--none-hi", known: false }
+    ];
+    EV.forEach(function (e) {
+      var X = at(e.t), col = tok(e.col);
+      mk("line", { x1: X, y1: AX - 58, x2: X, y2: AX, stroke: col, "stroke-width": 1.5,
+                   opacity: e.known ? .5 : .32,
+                   "stroke-dasharray": e.known ? "" : "3 3" }, svg);
+      mk("circle", { cx: X, cy: AX, r: 4.5, fill: e.known ? col : tok("--bg"),
+                     stroke: col, "stroke-width": 2 }, svg);
+      mk("text", { x: X, y: AX - 78, "text-anchor": "middle", "font-size": 12.5,
+                   "font-weight": 700, fill: col,
+                   "font-family": "Assistant, sans-serif" }, svg, e.lab);
+      mk("text", { x: X, y: AX - 64, "text-anchor": "middle", "font-size": 11,
+                   fill: tok("--ink-3"), "font-family": "Assistant, sans-serif" }, svg, e.note);
+    });
+  })();
+
+  /* ================= gauges ================= */
+  var GAUGES = [
+    { name: "מוכנות", value: 80, max: 100, base: 82.3, unitLabel: "מתוך 100",
+      sub: "אתמול · ממוצע 90 יום 82.3", state: "watch", label: "מעט מתחת",
+      what: "ציון 0-100 שאורה מחשבת כל בוקר מדופק המנוחה, ה-HRV, סטיית טמפרטורת הגוף, השינה של הלילה והאיזון בין פעילות למנוחה בימים האחרונים.",
+      src: "שים לב: ה-HRV ודופק המנוחה כאן מגיעים מדגימות של 30 שניות דרך ה-API, ויכולים להיות שונים מהמספר שמופיע באפליקציה." },
+    { name: "שינה", value: 84, max: 100, base: 78.5, unitLabel: "מתוך 100",
+      sub: "אתמול · ממוצע 90 יום 78.5", state: "good", label: "מעל הבסיס",
+      what: "ציון 0-100 מסך השינה, היעילות, זמן ההירדמות, כמה התעוררת, וכמה REM ושינה עמוקה קיבלת. אצלך סך השינה הוא המרכיב שהכי מנבא מוכנות.",
+      src: "נשמר רק מקטע השינה הארוך של הלילה. נמנומים לא נספרים כאן." },
+    { name: "לחץ", value: 21, max: 60, base: 22.1, unitLabel: "דק׳ ליום",
+      sub: "לחץ גבוה · נמדד ב-176 ימים", state: "good", label: "יציב",
+      what: "דקות ביום שבהן אורה סיווגה את מצב הגוף כלחץ גבוה, לפי דופק, HRV, טמפרטורה ותנועה. זה מדד פיזיולוגי, לא הרגשה.",
+      src: "ימים שאורה החזירה עליהם שורה מאופסת נזרקו ולא נספרו כאפס." },
+    { name: "אימוני כוח", value: 0.7, max: 4.5, base: null, unitLabel: "בשבוע",
+      sub: "נמדד, מול 4-5 שהצהרת", state: "bad", label: "פער",
+      what: "נספר מרשומות האימון של אורה שסומנו strengthTraining, גם אוטומטיות וגם ידניות. 30 רשומות ב-290 יום.",
+      src: "אורה מזהה הליכה, ריצה ואופניים טוב, ואימון כוח גרוע. הפיד הזה גם נעצר ב-14 ביוני. אל תקרא את המספר הזה כאמת על האימונים שלך." },
+    { name: "תזונה", value: 2, max: 6, base: null, unitLabel: "מתוך 6 ימים",
+      sub: "שאלונים שנענו · קפאין, אלכוהול, ארוחות", state: "none", label: "חסרות תשובות",
+      what: "אין פה חיישן. כל מה שידוע על אוכל, קפה ואלכוהול מגיע מהתשובות שלך במייל: מספר כוסות, שעת הקפה האחרונה, שעת הארוחה האחרונה, יחידות אלכוהול.",
+      src: "בשני ימים אי אפשר להצליב כלום. מ-20 ימים אפשר להתחיל לבדוק אם קפה אחרי 14:00 פוגע לך בשינה." }
+  ];
+
+  var R = 52, C = 2 * Math.PI * R, SW = 11;
+  var ringsEl = document.getElementById("rings");
+
+  GAUGES.forEach(function (g, gi) {
+    var hue = tok("--" + g.state), hi = tok("--" + g.state + "-hi");
+    var frac = Math.max(0, Math.min(1, g.value / g.max));
+
+    var card = document.createElement("div");
+    card.className = "ring";
+    var svg = mk("svg", { viewBox: "0 0 140 140" }, card);
+    var defs = mk("defs", {}, svg);
+    var lg = mk("linearGradient", { id: "g" + gi, x1: "0", y1: "0", x2: "1", y2: "1" }, defs);
+    mk("stop", { offset: "0%", "stop-color": hi }, lg);
+    mk("stop", { offset: "100%", "stop-color": hue }, lg);
+    var f = mk("filter", { id: "f" + gi, x: "-55%", y: "-55%", width: "210%", height: "210%" }, defs);
+    mk("feGaussianBlur", { stdDeviation: "5", result: "b" }, f);
+    var mg = mk("feMerge", {}, f);
+    mk("feMergeNode", { in: "b" }, mg);
+    mk("feMergeNode", { in: "SourceGraphic" }, mg);
+
+    var rot = "rotate(-90 70 70)", dash = (frac * C).toFixed(2) + " " + C.toFixed(2);
+    mk("circle", { cx: 70, cy: 70, r: R, fill: "none", stroke: tok("--track"), "stroke-width": SW }, svg);
+    mk("circle", { cx: 70, cy: 70, r: R, fill: "none", stroke: hue, opacity: .55,
+                   "stroke-width": SW, "stroke-dasharray": dash, "stroke-linecap": "round",
+                   transform: rot, filter: "url(#f" + gi + ")" }, svg);
+    var arc = mk("circle", { cx: 70, cy: 70, r: R, fill: "none", stroke: "url(#g" + gi + ")",
+                             "stroke-width": SW, "stroke-dasharray": dash,
+                             "stroke-linecap": "round", transform: rot, class: "arc" }, svg);
+    arc.style.setProperty("--circ", C.toFixed(2));
+
+    if (g.base != null) {
+      var a = (-90 + (g.base / g.max) * 360) * Math.PI / 180;
+      var r0 = R - SW / 2 - 3.5, r1 = R + SW / 2 + 3.5;
+      mk("line", { x1: 70 + Math.cos(a) * r0, y1: 70 + Math.sin(a) * r0,
+                   x2: 70 + Math.cos(a) * r1, y2: 70 + Math.sin(a) * r1,
+                   stroke: tok("--ink-2"), "stroke-width": 2, "stroke-linecap": "round",
+                   opacity: .85 }, svg);
+    }
+    mk("text", { x: 70, y: 74, "text-anchor": "middle", fill: tok("--ink"),
+                 "font-family": "Heebo, sans-serif", "font-weight": 900, "font-size": "34" },
+       svg, g.value % 1 === 0 ? g.value : g.value.toFixed(1));
+    mk("text", { x: 70, y: 92, "text-anchor": "middle", fill: tok("--ink-3"),
+                 "font-family": "Assistant, sans-serif", "font-size": "12" }, svg, g.unitLabel);
+
+    var nm = document.createElement("div");
+    nm.className = "ring-name"; nm.textContent = g.name; card.appendChild(nm);
+    var st = document.createElement("div");
+    st.className = "state s-" + g.state; st.textContent = g.label; card.appendChild(st);
+    var sb = document.createElement("div");
+    sb.className = "ring-sub"; sb.textContent = g.sub; card.appendChild(sb);
+
+    var det = document.createElement("details");
+    det.className = "explain";
+    var sm = document.createElement("summary");
+    sm.textContent = "איך זה נמדד";
+    var bd = document.createElement("div");
+    bd.className = "body";
+    bd.innerHTML = g.what + '<span class="src">' + g.src + "</span>";
+    det.appendChild(sm); det.appendChild(bd); card.appendChild(det);
+
+    ringsEl.appendChild(card);
+  });
+
+  /* ================= readiness, 28 days ================= */
+  var SERIES = [
+    ["08-15", null], ["08-16", 88], ["08-17", 67], ["08-18", 91], ["08-19", 89],
+    ["08-20", 70],   ["08-21", 87], ["08-22", 80], ["08-23", 78], ["08-24", 88],
+    ["08-25", 80],   ["08-26", null], ["08-27", 85], ["08-28", 85], ["08-29", 81],
+    ["08-30", 86],   ["08-31", null], ["09-01", 92], ["09-02", 91], ["09-03", 89],
+    ["09-04", null], ["09-05", null], ["09-06", 87], ["09-07", null], ["09-08", null],
+    ["09-09", null], ["09-10", null], ["09-11", 80]
+  ];
+  var W = 900, H = 250, PT = 24, PB = 38, PL = 50, PR = 36;
+  var Y0 = 60, Y1 = 100, iw = W - PL - PR, ih = H - PT - PB;
+  var x = function (i) { return PL + (i / (SERIES.length - 1)) * iw; };
+  var y = function (v) { return PT + ih - ((v - Y0) / (Y1 - Y0)) * ih; };
+
+  var svg = document.getElementById("trend");
+  var defs = mk("defs", {}, svg);
+  var ag = mk("linearGradient", { id: "areaFill", x1: "0", y1: "0", x2: "0", y2: "1" }, defs);
+  mk("stop", { offset: "0%", "stop-color": tok("--act-hi"), "stop-opacity": ".17" }, ag);
+  mk("stop", { offset: "100%", "stop-color": tok("--act-hi"), "stop-opacity": "0" }, ag);
+  var lf = mk("filter", { id: "lineGlow", x: "-12%", y: "-40%", width: "124%", height: "180%" }, defs);
+  mk("feGaussianBlur", { stdDeviation: "4" }, lf);
+
+  [60, 70, 80, 90, 100].forEach(function (v) {
+    mk("line", { x1: PL, x2: PL + iw, y1: y(v), y2: y(v), stroke: tok("--rule"), "stroke-width": 1 }, svg);
+    mk("text", { x: PL - 10, y: y(v) + 4, "font-size": 12, fill: tok("--ink-3"),
+                 "text-anchor": "end", "font-family": "Assistant, sans-serif" }, svg, v);
+  });
+
+  var gA = x(20) - (x(20) - x(19)) / 2, gB = x(27) + (x(27) - x(26)) / 2;
+  mk("rect", { x: gA, y: PT, width: gB - gA, height: ih, fill: tok("--ink-3"), opacity: .10 }, svg);
+  mk("text", { x: (gA + gB) / 2, y: PT + 15, "font-size": 11.5, fill: tok("--ink-3"),
+               "text-anchor": "middle", "font-family": "Assistant, sans-serif" }, svg, "הטבעת מתה");
+
+  var run = [];
+  var flush = function () {
+    if (run.length > 1) {
+      var d = run.map(function (p, i) { return (i ? "L" : "M") + p[0] + " " + p[1]; }).join(" ");
+      mk("path", { d: d + " L" + run[run.length - 1][0] + " " + (PT + ih) +
+                      " L" + run[0][0] + " " + (PT + ih) + " Z", fill: "url(#areaFill)" }, svg);
+      mk("path", { d: d, fill: "none", stroke: tok("--act-hi"), "stroke-width": 4.5,
+                   opacity: .55, filter: "url(#lineGlow)", "stroke-linecap": "round",
+                   "stroke-linejoin": "round" }, svg);
+      mk("path", { d: d, fill: "none", stroke: tok("--act-hi"), "stroke-width": 2.5,
+                   "stroke-linecap": "round", "stroke-linejoin": "round" }, svg);
+    } else if (run.length === 1) {
+      mk("circle", { cx: run[0][0], cy: run[0][1], r: 6, fill: tok("--bg"),
+                     stroke: tok("--act-hi"), "stroke-width": 2.5 }, svg);
+    }
+    run = [];
+  };
+  SERIES.forEach(function (d, i) { if (d[1] == null) { flush(); } else { run.push([x(i), y(d[1])]); } });
+  flush();
+
+  var last = SERIES.length - 1, lv = SERIES[last][1];
+  mk("circle", { cx: x(last), cy: y(lv), r: 9, fill: "none", stroke: tok("--good-hi"),
+                 "stroke-width": 2, opacity: .45 }, svg);
+  mk("circle", { cx: x(last), cy: y(lv), r: 4.5, fill: tok("--good-hi") }, svg);
+  mk("text", { x: x(last) - 6, y: y(lv) - 13, "font-size": 13, "font-weight": 700,
+               "text-anchor": "end", fill: tok("--good-hi"), "font-family": "Heebo, sans-serif" },
+     svg, lv);
+
+  [[0, "15.8"], [9, "24.8"], [17, "1.9"], [27, "11.9"]].forEach(function (t) {
+    mk("text", { x: x(t[0]), y: H - 13, "font-size": 12, fill: tok("--ink-3"),
+                 "text-anchor": "middle", "font-family": "Assistant, sans-serif" }, svg, t[1]);
+  });
+
+  /* ================= established links ================= */
+  var SLOPES = [
+    { from: 79, to: 89, fromLab: "6 שע׳ 43 ד׳", toLab: "8 שע׳ 17 ד׳", good: true },
+    { from: 87, to: 81, fromLab: "22:00",       toLab: "24:00",       good: false }
+  ];
+  document.querySelectorAll("svg.slope").forEach(function (s, idx) {
+    var c = SLOPES[idx], w = 300, h = 106, pl = 48, pr = 48, pt = 24, pb = 24;
+    var lo = 75, hi2 = 92;
+    var yy = function (v) { return pt + (h - pt - pb) - ((v - lo) / (hi2 - lo)) * (h - pt - pb); };
+    var xFrom = pl, xTo = w - pr;
+    var col = c.good ? tok("--good-hi") : tok("--bad-hi");
+    mk("line", { x1: xFrom, y1: yy(c.from), x2: xTo, y2: yy(c.to), stroke: col,
+                 "stroke-width": 2.5, "stroke-linecap": "round" }, s);
+    [[xFrom, c.from, c.fromLab], [xTo, c.to, c.toLab]].forEach(function (p) {
+      mk("circle", { cx: p[0], cy: yy(p[1]), r: 5.5, fill: col }, s);
+      mk("text", { x: p[0], y: yy(p[1]) - 12, "font-size": 15, "font-weight": 700,
+                   fill: tok("--ink"), "text-anchor": "middle",
+                   "font-family": "Heebo, sans-serif" }, s, p[1]);
+      mk("text", { x: p[0], y: h - 7, "font-size": 11.5, fill: tok("--ink-3"),
+                   "text-anchor": "middle", "font-family": "Assistant, sans-serif" }, s, p[2]);
+    });
+    var d = c.to - c.from;
+    mk("text", { x: w / 2, y: pt - 9, "font-size": 12.5, "font-weight": 700, fill: col,
+                 "text-anchor": "middle", "font-family": "Assistant, sans-serif" }, s,
+       (d > 0 ? "+" : "−") + Math.abs(d) + " נקודות מוכנות");
+  });
+})();
+</script>

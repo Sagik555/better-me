@@ -40,7 +40,7 @@ if (!threads.length) {
 const FIELDS = [
   'energy_am', 'energy_pm', 'focus', 'work_stress', 'acute_event', 'acute_note',
   'workout_type', 'workout_start_hour', 'workout_duration_min', 'workout_rpe',
-  'last_meal_hour', 'meal_size', 'alcohol_units', 'last_drink_hour',
+  'last_meal_hour', 'meal_size', 'meals_count', 'water_l', 'alcohol_units', 'last_drink_hour',
   'caffeine_cups', 'last_caffeine_hour', 'food_text', 'weight_kg', 'notes',
 ];
 
