@@ -79,7 +79,10 @@ let handled = 0;
 for (const t of threads) {
   const replies = await readThreadReplies(t.gmail_thread_id, { excludeIds: [t.gmail_message_id] });
   if (!replies.length) { console.log(`  ${t.date} ${t.kind}: no reply yet`); continue; }
-  const text = replies.map((r) => r.text).join('\n\n').trim();
+  // readThreadReplies returns `body`, not `text`. Reading the wrong key here
+  // produced "reply is empty" against a thread that had a 1,119-character
+  // answer sitting in it.
+  const text = replies.map((r) => r.body).join('\n\n').trim();
   if (!text) { console.log(`  ${t.date} ${t.kind}: reply is empty`); continue; }
 
   const rows = await q('SELECT key, value_he FROM profile');
