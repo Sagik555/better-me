@@ -83,13 +83,43 @@ if (!rows.length) {
               `  Wear it and open the Oura app so it syncs.`);
 }
 
-// The current run starts at the last reading where the ring was in the charger.
-if (rows.length) {
-let runStart = 0;
-for (let i = rows.length - 1; i >= 0; i--) {
-  if (rows[i].in_charger || rows[i].charging) { runStart = i; break; }
+/**
+ * Split readings into discharge runs.
+ *
+ * The charger flag is NOT enough. The API only returns readings that happened
+ * to sync, and a charge that starts and finishes between two syncs leaves no
+ * in_charger row behind. On the replacement ring the level went 45% -> 69%
+ * across a 25-hour gap with no charger reading at all, and the old splitter
+ * glued both runs together: "69% -> 60% over 61.7 hours, 0.15 %/h, a full
+ * charge lasts 28.6 days". Every one of those numbers was fiction, built from
+ * the first reading of one run and the last reading of another.
+ *
+ * A battery level cannot rise without charging. So a rise between consecutive
+ * readings ends the run exactly as a charger flag does. A long gap on its own
+ * does not: the ring may simply not have synced.
+ */
+function splitRuns(readings) {
+  const runs = [];
+  let cur = [];
+  let prev = null;
+  for (const r of readings) {
+    const charging = r.in_charger || r.charging;
+    const rose = prev && r.level > prev.level;
+    if (charging || rose) {
+      if (cur.length >= 2) runs.push(cur);
+      cur = charging ? [] : [r];   // after an unseen charge, this reading STARTS the new run
+    } else {
+      cur.push(r);
+    }
+    prev = r;
+  }
+  if (cur.length >= 2) runs.push(cur);
+  return runs;
 }
-const run = rows.slice(runStart).filter((r, i) => i === 0 || (!r.in_charger && !r.charging));
+
+if (rows.length) {
+const allRuns = splitRuns(rows);
+const run = allRuns.length ? allRuns[allRuns.length - 1] : [];
 
 console.log('=== CURRENT RUN (since it last left the charger) ===');
 if (run.length < 2) {
@@ -137,17 +167,7 @@ for (const ring of ringRows) {
   const span = `${ring.paired_at.slice(0, 10)} .. ${ring.retired_at ? ring.retired_at.slice(0, 10) : 'now'}`;
   console.log(`\n  ${ring.label}  (${span})  ${readings.length} reading(s)`);
 
-  let cur = [];
-  const runs = [];
-  for (const r of readings) {
-    if (r.in_charger || r.charging) {
-      if (cur.length >= 2) runs.push(cur);
-      cur = [];
-    } else {
-      cur.push(r);
-    }
-  }
-  if (cur.length >= 2) runs.push(cur);
+  const runs = splitRuns(readings);
 
   let printed = 0;
   for (const rn of runs) {
